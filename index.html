@@ -1,23 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NP Summary Dashboard - Enhanced Analytics</title>
+    <title>Non-Perishables Commerce Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f4f7fa; color: #1e293b; }
-        
-        .summary-table th { border: 1px solid #f1f5f9; text-align: center; padding: 12px 8px; font-size: 0.7rem; white-space: nowrap; }
-        .summary-table td { border: 1px solid #f8fafc; padding: 10px 12px; text-align: right; font-size: 0.85rem; transition: all 0.2s; }
-        .summary-table tr:hover td { background-color: #f8fafc; }
-        
-        .sub-header th { font-size: 0.6rem; color: #94a3b8; letter-spacing: 0.05em; border-top: none; }
-        .total-col { font-weight: 800; background-color: #f8fafc; color: #1e293b; }
-        
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f4f7fa;
+            color: #1e293b;
+        }
+
+        /* PASSWORD PROTECTION STYLES */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .login-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 300px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Dashboard content is hidden initially */
+        #dashboard-content {
+            display: none;
+        }
+
+        .summary-table th {
+            border: 1px solid #f1f5f9;
+            text-align: center;
+            padding: 12px 8px;
+            font-size: 0.7rem;
+            white-space: nowrap;
+        }
+
+        .summary-table td {
+            border: 1px solid #f8fafc;
+            padding: 10px 12px;
+            text-align: right;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .summary-table tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        .sub-header th {
+            font-size: 0.6rem;
+            color: #94a3b8;
+            letter-spacing: 0.05em;
+            border-top: none;
+        }
+
+        .total-col {
+            font-weight: 800;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
         .loader {
             border: 3px solid #f3f3f3;
             border-top: 3px solid #3b82f6;
@@ -26,148 +87,281 @@
             height: 24px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .drill-down-row { cursor: pointer; transition: transform 0.1s; }
-        .drill-down-row:active { transform: scale(0.99); }
-        
-        .detail-table th { font-size: 0.65rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; background: #f8fafc; padding: 12px; font-weight: 800; border-bottom: 2px solid #e2e8f0; }
-        .detail-table td { font-size: 0.75rem; padding: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
 
-        .zonal-card { border-radius: 2rem; overflow: hidden; background: white; border: 1px solid #f1f5f9; box-shadow: 0 4px 15px -1px rgb(0 0 0 / 0.05); }
-        
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .drill-down-row {
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .drill-down-row:active {
+            transform: scale(0.99);
+        }
+
+        .detail-table th {
+            font-size: 0.6rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: #f8fafc;
+            padding: 12px 8px;
+            font-weight: 800;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .detail-table td {
+            font-size: 0.7rem;
+            padding: 10px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+
+        .zonal-card {
+            border-radius: 2rem;
+            overflow: hidden;
+            background: white;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 4px 15px -1px rgb(0 0 0 / 0.05);
+        }
+
         .glass-card {
             background: white;
-            padding: 1.5rem;
-            border-radius: 1.75rem;
+            padding: 1.25rem;
+            border-radius: 1.5rem;
             border: 1px solid #ffffff;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
         }
-        .glass-card:hover { transform: translateY(-3px); box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.08); }
 
-        .bg-onion { background: #fff7ed; color: #9a3412; }
-        .bg-garlic { background: #eff6ff; color: #1e40af; }
-        .bg-ginger { background: #f5f3ff; color: #5b21b6; }
-        .bg-others { background: #f8fafc; color: #475569; }
+        .glass-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.08);
+        }
 
-        .highlight-green { color: #10b981 !important; font-weight: 900; }
+        .bg-onion {
+            background: #fff7ed;
+            color: #9a3412;
+        }
+
+        .bg-garlic {
+            background: #eff6ff;
+            color: #1e40af;
+        }
+
+        .bg-ginger {
+            background: #f5f3ff;
+            color: #5b21b6;
+        }
+
+        .bg-others {
+            background: #f8fafc;
+            color: #475569;
+        }
+
+        .highlight-green {
+            color: #10b981 !important;
+            font-weight: 900;
+        }
+
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: #f1f5f9;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 1s ease-in-out;
+        }
     </style>
 </head>
+
 <body class="min-h-screen">
-    <div class="max-w-7xl mx-auto px-4 py-8">
+
+    <!-- LOGIN OVERLAY START -->
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2 class="text-xl font-black text-slate-800 mb-4">Secured Access</h2>
+            <input type="password" id="password-input" placeholder="Enter Password"
+                class="w-full p-3 border rounded-lg mb-4 text-center font-bold focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button onclick="checkPassword()"
+                class="w-full bg-slate-900 text-white font-bold py-3 rounded-lg hover:bg-slate-800 transition">Unlock</button>
+            <p id="login-error" class="text-red-500 text-xs mt-3 hidden font-bold">Incorrect Password</p>
+        </div>
+    </div>
+    <!-- LOGIN OVERLAY END -->
+
+    <div id="dashboard-content" class="max-w-7xl mx-auto px-4 py-8">
         <!-- Header Controls -->
         <div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
             <div class="space-y-1">
-                <h1 class="text-4xl font-black text-slate-900 tracking-tight">Trade Analytics</h1>
-                <p id="view-subtitle" class="text-[10px] text-blue-600 font-bold uppercase tracking-[0.3em]"></p>
+                <h1 class="text-4xl font-black text-slate-900 tracking-tight">Non-Perishables Commerce</h1>
+                <p id="view-subtitle" class="text-[10px] text-blue-600 font-bold uppercase tracking-[0.3em]">Business
+                    Intelligence Ledger</p>
             </div>
 
             <div class="flex items-center gap-4">
                 <div class="bg-white p-2 px-5 rounded-full shadow-sm border border-slate-200 flex items-center gap-4">
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Select Month</span>
-                    <select id="main-month-filter" class="bg-transparent border-none text-slate-900 font-extrabold text-sm focus:ring-0 cursor-pointer outline-none"></select>
+                    <select id="main-month-filter"
+                        class="bg-transparent border-none text-slate-900 font-extrabold text-sm focus:ring-0 cursor-pointer outline-none"></select>
                 </div>
             </div>
         </div>
 
-        <!-- High Impact Metric Grid -->
-        <div id="top-metrics-row" class="hidden mb-12">
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-6">
-                <!-- Executed Card -->
-                <div class="glass-card relative overflow-hidden group">
-                    <div class="absolute right-0 top-0 w-24 h-24 bg-slate-50 rounded-full -mr-12 -mt-12 group-hover:bg-slate-100 transition-colors"></div>
-                    <p class="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-2">Executed Trades</p>
-                    <div class="flex items-baseline gap-2">
-                        <h3 id="stat-executed" class="text-3xl font-black text-slate-800">0</h3>
-                        <span class="text-[10px] font-bold text-slate-400">Total</span>
+        <!-- Metric Grid -->
+        <div id="top-metrics-row" class="hidden mb-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-4">
+                <div class="glass-card">
+                    <p class="text-slate-400 text-[9px] uppercase font-black tracking-widest mb-1">Executed</p>
+                    <h3 id="stat-executed" class="text-xl font-black text-slate-800">0</h3>
+                </div>
+                <div class="glass-card">
+                    <p class="text-emerald-600 text-[9px] uppercase font-black tracking-widest mb-1">Closed</p>
+                    <h3 id="stat-closed" class="text-xl font-black text-emerald-600">0</h3>
+                </div>
+                <div class="glass-card">
+                    <p class="text-blue-600 text-[9px] uppercase font-black tracking-widest mb-1">Active Buyers</p>
+                    <h3 id="stat-buyers" class="text-xl font-black text-blue-600">0</h3>
+                </div>
+                <div class="glass-card">
+                    <p class="text-purple-600 text-[9px] uppercase font-black tracking-widest mb-1">Active Sellers</p>
+                    <h3 id="stat-sellers" class="text-xl font-black text-purple-600">0</h3>
+                </div>
+                <div class="glass-card bg-slate-900 text-white border-none">
+                    <p class="text-slate-400 text-[9px] uppercase font-black tracking-widest mb-1">Closed GMV</p>
+                    <h3 id="stat-gmv" class="text-xl font-black">₹0</h3>
+                </div>
+                <div class="glass-card bg-emerald-600 text-white border-none">
+                    <p class="text-emerald-100 text-[9px] uppercase font-black tracking-widest mb-1">Closed Margin</p>
+                    <h3 id="stat-margin" class="text-xl font-black">₹0</h3>
+                </div>
+                <div class="glass-card bg-indigo-600 text-white border-none">
+                    <p class="text-indigo-100 text-[9px] uppercase font-black tracking-widest mb-1">Avg GMV / Trade</p>
+                    <h3 id="stat-avg-gmv" class="text-xl font-black">₹0</h3>
+                </div>
+                <div class="glass-card bg-orange-600 text-white border-none">
+                    <p class="text-orange-100 text-[9px] uppercase font-black tracking-widest mb-1">Potential Margin</p>
+                    <h3 id="stat-potential" class="text-xl font-black">₹0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dedicated Net Margin View -->
+        <div id="net-margin-row" class="hidden mb-6">
+            <div class="glass-card bg-white border-2 border-emerald-100 bg-emerald-50/10">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="space-y-1">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-emerald-600">Business Efficiency
+                        </p>
+                        <h2 class="text-2xl font-black text-slate-800">Net Margin %</h2>
+                    </div>
+                    <div class="flex flex-1 max-w-2xl items-center gap-8">
+                        <div class="flex-1 space-y-2">
+                            <div class="flex justify-between items-baseline">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase">Profitability Ratio</span>
+                                <span id="net-margin-perc-display"
+                                    class="text-3xl font-black text-emerald-600">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div id="net-margin-progress" class="progress-fill bg-emerald-600" style="width: 0%">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="h-12 w-[1px] bg-slate-100 hidden md:block"></div>
+                        <div class="text-right">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Yield per Trade
+                            </p>
+                            <h4 id="net-avg-margin" class="text-xl font-black text-slate-700">₹0</h4>
+                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Closed Card -->
-                <div class="glass-card relative overflow-hidden group border-b-4 border-b-emerald-400">
-                    <p class="text-emerald-600 text-[10px] uppercase font-black tracking-widest mb-2">Closed Trades</p>
-                    <div class="flex items-baseline gap-2">
-                        <h3 id="stat-closed" class="text-3xl font-black text-emerald-600">0</h3>
-                        <span class="text-[10px] font-bold text-emerald-400">Success</span>
-                    </div>
+        <!-- Category Horizontal Margin % View -->
+        <div id="margin-analysis-row" class="hidden mb-12 grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="glass-card border-l-4 border-l-orange-400">
+                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Onion Margin %</p>
+                <h4 id="margin-perc-onion" class="text-2xl font-black text-orange-600 mb-2">0%</h4>
+                <div class="progress-bar">
+                    <div id="bar-onion" class="progress-fill bg-orange-400" style="width: 0%"></div>
                 </div>
-
-                <!-- Active Buyers -->
-                <div class="glass-card border-b-4 border-b-indigo-400">
-                    <p class="text-indigo-600 text-[10px] uppercase font-black tracking-widest mb-2">Active Buyers</p>
-                    <div class="flex items-baseline gap-2">
-                        <h3 id="stat-buyers" class="text-3xl font-black text-indigo-700">0</h3>
-                        <span class="text-[10px] font-bold text-indigo-300">Closed Only</span>
-                    </div>
+            </div>
+            <div class="glass-card border-l-4 border-l-blue-400">
+                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Garlic Margin %</p>
+                <h4 id="margin-perc-garlic" class="text-2xl font-black text-blue-600 mb-2">0%</h4>
+                <div class="progress-bar">
+                    <div id="bar-garlic" class="progress-fill bg-blue-400" style="width: 0%"></div>
                 </div>
-
-                <!-- Active Sellers -->
-                <div class="glass-card border-b-4 border-b-orange-400">
-                    <p class="text-orange-600 text-[10px] uppercase font-black tracking-widest mb-2">Active Sellers</p>
-                    <div class="flex items-baseline gap-2">
-                        <h3 id="stat-sellers" class="text-3xl font-black text-orange-700">0</h3>
-                        <span class="text-[10px] font-bold text-orange-300">Closed Only</span>
-                    </div>
+            </div>
+            <div class="glass-card border-l-4 border-l-purple-400">
+                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Ginger Margin %</p>
+                <h4 id="margin-perc-ginger" class="text-2xl font-black text-purple-600 mb-2">0%</h4>
+                <div class="progress-bar">
+                    <div id="bar-ginger" class="progress-fill bg-purple-400" style="width: 0%"></div>
                 </div>
-
-                <!-- GMV -->
-                <div class="glass-card lg:col-span-1 bg-slate-900 text-white border-none">
-                    <p class="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-2">Closed GMV</p>
-                    <h3 id="stat-gmv" class="text-2xl font-black">₹0</h3>
-                    <p id="stat-avg-gmv" class="text-[10px] text-slate-400 font-bold mt-1">Avg: ₹0</p>
-                </div>
-
-                <!-- Margin -->
-                <div class="glass-card bg-emerald-50 border-emerald-100">
-                    <p class="text-emerald-600 text-[10px] uppercase font-black tracking-widest mb-2">Net Margin</p>
-                    <h3 id="stat-margin" class="text-3xl font-black text-emerald-700">₹0</h3>
-                </div>
-
-                <!-- Margin % -->
-                <div class="glass-card bg-blue-600 text-white border-none flex flex-col justify-center items-center text-center">
-                    <p class="text-blue-200 text-[10px] uppercase font-black tracking-widest mb-1">Efficiency</p>
-                    <h3 id="stat-perc" class="text-4xl font-black tracking-tight">0.00%</h3>
-                </div>
-
-                <!-- Potential Margin -->
-                <div class="glass-card flex flex-col justify-between border-l-4 border-l-orange-500 bg-orange-50/30">
-                    <div>
-                        <p class="text-orange-600 text-[10px] uppercase font-black tracking-widest">Potential Margin</p>
-                        <h3 id="stat-potential" class="text-xl font-black text-slate-800">₹0</h3>
-                    </div>
-                    <p class="text-[9px] text-orange-500 font-bold">From Open Trades (Avg GMV × Efficiency)</p>
+            </div>
+            <div class="glass-card border-l-4 border-l-slate-400">
+                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Others Margin %</p>
+                <h4 id="margin-perc-others" class="text-2xl font-black text-slate-600 mb-2">0%</h4>
+                <div class="progress-bar">
+                    <div id="bar-others" class="progress-fill bg-slate-400" style="width: 0%"></div>
                 </div>
             </div>
         </div>
 
         <!-- Commodity Matrix -->
-        <div id="matrix-container" class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mb-12 hidden">
+        <div id="matrix-container"
+            class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mb-12 hidden">
             <div class="p-8 pb-4 flex justify-between items-center">
-                <div>
-                    <h3 class="text-lg font-black text-slate-800 tracking-tight">Commodity Matrix</h3>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Direct Trade vs Commission Logic</p>
-                </div>
-                <div class="bg-slate-50 border border-slate-100 px-4 py-2 rounded-2xl">
-                    <span id="matrix-month-label" class="text-[11px] font-black text-blue-600 uppercase tracking-widest"></span>
-                </div>
+                <h3 class="text-lg font-black text-slate-800 tracking-tight">Commodity Matrix</h3>
             </div>
             <div class="overflow-x-auto px-4 pb-8">
                 <table class="w-full border-separate border-spacing-1 summary-table">
                     <thead>
                         <tr>
-                            <th rowspan="2" class="text-left px-6 py-4 text-slate-400 font-black uppercase tracking-widest border-none">Metric</th>
-                            <th colspan="2" class="bg-onion rounded-t-2xl font-black uppercase text-[10px] tracking-widest border-none py-4">Onion</th>
-                            <th colspan="2" class="bg-garlic rounded-t-2xl font-black uppercase text-[10px] tracking-widest border-none py-4">Garlic</th>
-                            <th colspan="2" class="bg-ginger rounded-t-2xl font-black uppercase text-[10px] tracking-widest border-none py-4">Ginger</th>
-                            <th colspan="2" class="bg-others rounded-t-2xl font-black uppercase text-[10px] tracking-widest border-none py-4">Others</th>
-                            <th rowspan="2" class="bg-slate-800 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest border-none px-6">Total</th>
+                            <th rowspan="2"
+                                class="text-left px-6 py-4 text-slate-400 font-black uppercase tracking-widest border-none">
+                                Metric</th>
+                            <th colspan="2"
+                                class="bg-onion rounded-t-2xl font-black uppercase text-[10px] tracking-widest border-none py-4">
+                                Onion</th>
+                            <th colspan="2"
+                                class="bg-garlic rounded-t-2xl font-black uppercase text-[10px] tracking-widest border-none py-4">
+                                Garlic</th>
+                            <th colspan="2"
+                                class="bg-ginger rounded-t-2xl font-black uppercase text-[10px] tracking-widest border-none py-4">
+                                Ginger</th>
+                            <th colspan="2"
+                                class="bg-others rounded-t-2xl font-black uppercase text-[10px] tracking-widest border-none py-4">
+                                Others</th>
+                            <th rowspan="2"
+                                class="bg-slate-800 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest border-none px-6">
+                                Total</th>
                         </tr>
                         <tr class="sub-header">
-                            <th class="bg-orange-50/30">Trade</th><th class="bg-orange-50/30">Comm.</th>
-                            <th class="bg-blue-50/30">Trade</th><th class="bg-blue-50/30">Comm.</th>
-                            <th class="bg-purple-50/30">Trade</th><th class="bg-purple-50/30">Comm.</th>
-                            <th class="bg-slate-50/30">Trade</th><th class="bg-slate-50/30">Comm.</th>
+                            <th class="bg-orange-50/30">Trade</th>
+                            <th class="bg-orange-50/30">Comm.</th>
+                            <th class="bg-blue-50/30">Trade</th>
+                            <th class="bg-blue-50/30">Comm.</th>
+                            <th class="bg-purple-50/30">Trade</th>
+                            <th class="bg-purple-50/30">Comm.</th>
+                            <th class="bg-slate-50/30">Trade</th>
+                            <th class="bg-slate-50/30">Comm.</th>
                         </tr>
                     </thead>
                     <tbody id="matrix-body"></tbody>
@@ -175,57 +369,115 @@
             </div>
         </div>
 
-        <!-- Regional Performance Views -->
+        <!-- Zonal Performance -->
         <div id="regional-views" class="space-y-12">
-            <!-- Onion -->
             <div id="onion-zonal" class="zonal-card hidden">
-                <div class="bg-slate-900 text-white py-6 px-8 flex justify-between items-center">
-                    <h3 class="font-black text-xs uppercase tracking-[0.2em]">Onion Territory Performance</h3>
+                <div class="bg-slate-900 text-white py-4 px-8">
+                    <h3 class="font-black text-xs uppercase tracking-[0.2em]">Onion Territory</h3>
                 </div>
-                <div class="overflow-x-auto p-4"><table class="w-full summary-table"><thead><tr class="bg-slate-50 text-[9px] uppercase tracking-widest text-slate-400"><th class="text-left px-8 py-4 border-none">Territory</th><th class="border-none">Executed</th><th class="border-none">Closed</th><th class="border-none">GMV</th><th class="border-none">Margin</th><th class="border-none">Margin %</th></tr></thead><tbody id="body-onion"></tbody></table></div>
+                <div class="overflow-x-auto p-4">
+                    <table class="w-full summary-table">
+                        <thead>
+                            <tr class="bg-slate-50 text-[9px] uppercase tracking-widest text-slate-400">
+                                <th class="text-left px-8 py-4 border-none">Territory</th>
+                                <th class="border-none">Executed</th>
+                                <th class="border-none">Closed</th>
+                                <th class="border-none">GMV</th>
+                                <th class="border-none">Margin</th>
+                                <th class="border-none">Margin %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-onion"></tbody>
+                    </table>
+                </div>
             </div>
-            <!-- Garlic -->
             <div id="garlic-zonal" class="zonal-card hidden">
-                <div class="bg-blue-900 text-white py-6 px-8 flex justify-between items-center">
-                    <h3 class="font-black text-xs uppercase tracking-[0.2em]">Garlic Territory Performance</h3>
+                <div class="bg-blue-900 text-white py-4 px-8">
+                    <h3 class="font-black text-xs uppercase tracking-[0.2em]">Garlic Territory</h3>
                 </div>
-                <div class="overflow-x-auto p-4"><table class="w-full summary-table"><thead><tr class="bg-slate-50 text-[9px] uppercase tracking-widest text-slate-400"><th class="text-left px-8 py-4 border-none">Territory</th><th class="border-none">Executed</th><th class="border-none">Closed</th><th class="border-none">GMV</th><th class="border-none">Margin</th><th class="border-none">Margin %</th></tr></thead><tbody id="body-garlic"></tbody></table></div>
+                <div class="overflow-x-auto p-4">
+                    <table class="w-full summary-table">
+                        <thead>
+                            <tr class="bg-slate-50 text-[9px] uppercase tracking-widest text-slate-400">
+                                <th class="text-left px-8 py-4 border-none">Territory</th>
+                                <th class="border-none">Executed</th>
+                                <th class="border-none">Closed</th>
+                                <th class="border-none">GMV</th>
+                                <th class="border-none">Margin</th>
+                                <th class="border-none">Margin %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-garlic"></tbody>
+                    </table>
+                </div>
             </div>
-            <!-- Ginger -->
             <div id="ginger-zonal" class="zonal-card hidden">
-                <div class="bg-purple-900 text-white py-6 px-8 flex justify-between items-center">
-                    <h3 class="font-black text-xs uppercase tracking-[0.2em]">Ginger Territory Performance</h3>
+                <div class="bg-purple-900 text-white py-4 px-8">
+                    <h3 class="font-black text-xs uppercase tracking-[0.2em]">Ginger Territory</h3>
                 </div>
-                <div class="overflow-x-auto p-4"><table class="w-full summary-table"><thead><tr class="bg-slate-50 text-[9px] uppercase tracking-widest text-slate-400"><th class="text-left px-8 py-4 border-none">Territory</th><th class="border-none">Executed</th><th class="border-none">Closed</th><th class="border-none">GMV</th><th class="border-none">Margin</th><th class="border-none">Margin %</th></tr></thead><tbody id="body-ginger"></tbody></table></div>
+                <div class="overflow-x-auto p-4">
+                    <table class="w-full summary-table">
+                        <thead>
+                            <tr class="bg-slate-50 text-[9px] uppercase tracking-widest text-slate-400">
+                                <th class="text-left px-8 py-4 border-none">Territory</th>
+                                <th class="border-none">Executed</th>
+                                <th class="border-none">Closed</th>
+                                <th class="border-none">GMV</th>
+                                <th class="border-none">Margin</th>
+                                <th class="border-none">Margin %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-ginger"></tbody>
+                    </table>
+                </div>
             </div>
-            <!-- Others -->
             <div id="others-zonal" class="zonal-card hidden">
-                <div class="bg-slate-600 text-white py-6 px-8 flex justify-between items-center">
-                    <h3 class="font-black text-xs uppercase tracking-[0.2em]">Others Territory Performance</h3>
+                <div class="bg-slate-600 text-white py-4 px-8">
+                    <h3 class="font-black text-xs uppercase tracking-[0.2em]">Others Territory</h3>
                 </div>
-                <div class="overflow-x-auto p-4"><table class="w-full summary-table"><thead><tr class="bg-slate-50 text-[9px] uppercase tracking-widest text-slate-400"><th class="text-left px-8 py-4 border-none">Territory</th><th class="border-none">Executed</th><th class="border-none">Closed</th><th class="border-none">GMV</th><th class="border-none">Margin</th><th class="border-none">Margin %</th></tr></thead><tbody id="body-others"></tbody></table></div>
+                <div class="overflow-x-auto p-4">
+                    <table class="w-full summary-table">
+                        <thead>
+                            <tr class="bg-slate-50 text-[9px] uppercase tracking-widest text-slate-400">
+                                <th class="text-left px-8 py-4 border-none">Territory</th>
+                                <th class="border-none">Executed</th>
+                                <th class="border-none">Closed</th>
+                                <th class="border-none">GMV</th>
+                                <th class="border-none">Margin</th>
+                                <th class="border-none">Margin %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-others"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- Trade Details Drawer -->
-        <div id="trade-detail-container" class="fixed inset-x-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 ease-out bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-t-[3rem] h-[85vh] border-t border-slate-200 overflow-hidden hidden">
-            <div class="sticky top-0 bg-white p-8 pb-4 flex justify-between items-center border-b border-slate-50 z-10">
-                <h3 class="text-xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-                    <span id="detail-zone-name" class="text-blue-600">Zone</span>
-                    <span class="text-slate-300">/</span> Ledger
-                </h3>
-                <button onclick="closeDetails()" class="bg-slate-100 hover:bg-slate-200 p-3 rounded-full transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
+        <div id="trade-detail-container"
+            class="fixed inset-x-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 ease-out bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-t-[3rem] h-[90vh] border-t border-slate-200 overflow-hidden hidden">
+            <div class="sticky top-0 bg-white p-8 pb-4 flex justify-between items-center border-b border-slate-50 z-30">
+                <h3 class="text-xl font-black text-slate-800 tracking-tight flex items-center gap-3"><span
+                        id="detail-zone-name" class="text-blue-600">Zone</span><span class="text-slate-300">/</span>
+                    Detailed Ledger</h3>
+                <button onclick="closeDetails()"
+                    class="bg-slate-100 hover:bg-slate-200 p-3 rounded-full transition-colors"><svg
+                        xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-500" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg></button>
             </div>
-            <div class="overflow-y-auto h-[calc(85vh-100px)] p-6">
+            <div class="overflow-x-auto overflow-y-auto h-[calc(90vh-100px)] p-6">
                 <table class="w-full detail-table">
                     <thead>
                         <tr>
                             <th class="text-left">Date</th>
-                            <th class="text-left">Buyer ID</th>
+                            <th class="text-left">Buyer Name</th>
                             <th class="text-left">Seller</th>
+                            <th class="text-right">Purchase Value</th>
                             <th class="text-right">GMV</th>
+                            <th class="text-right">Seller Payout</th>
                             <th class="text-right">Margin</th>
                             <th class="text-right">Margin %</th>
                             <th class="text-center">Status</th>
@@ -239,9 +491,11 @@
         <!-- Loaders -->
         <div id="initial-loader" class="flex flex-col items-center justify-center py-32">
             <div class="loader mb-6"></div>
-            <p class="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">Processing Records</p>
+            <p class="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">Syncing Intelligence</p>
         </div>
-        <div id="error-box" class="hidden p-6 bg-red-50 text-red-700 rounded-3xl text-center border border-red-100 mb-4 font-bold text-sm"></div>
+        <div id="error-box"
+            class="hidden p-6 bg-red-50 text-red-700 rounded-3xl text-center border border-red-100 mb-4 font-bold text-sm">
+        </div>
     </div>
 
     <script>
@@ -250,6 +504,31 @@
         const CATEGORIES = ['Onion', 'Garlic', 'Ginger', 'Others'];
         const TYPES = ['Order', 'Commission'];
         const REGION_MAP = { "Nagendra": "Nashik Zone", "Sachin": "Nagar Zone", "Nanda Kishore": "Southern Region", "Manpreet": "MP Cluster", "Central": "Central Hub" };
+
+
+        // --- PASSWORD PROTECTION SCRIPT START ---
+        function checkPassword() {
+            const input = document.getElementById('password-input').value;
+            const error = document.getElementById('login-error');
+            const overlay = document.getElementById('login-overlay');
+            const content = document.getElementById('dashboard-content');
+
+            // CHANGE THIS PASSWORD IF YOU WANT
+            if (input === 'admin123') {
+                overlay.style.display = 'none';
+                content.style.display = 'block';
+                init(); // Start loading data only after login
+            } else {
+                error.classList.remove('hidden');
+            }
+        }
+
+        // Allow pressing Enter to submit password
+        document.getElementById('password-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkPassword();
+        });
+        // --- PASSWORD PROTECTION SCRIPT END ---
+
 
         function findColumn(row, targetName) {
             if (!row) return null;
@@ -269,68 +548,101 @@
         async function init() {
             Papa.parse(CSV_URL, {
                 download: true, header: true, dynamicTyping: true, skipEmptyLines: true,
-                complete: function(results) {
+                complete: function (results) {
                     if (results.data && results.data.length > 0) {
                         rawData = results.data;
-                        const months = [...new Set(rawData.map(row => findColumn(row, 'GMV Month')))].filter(Boolean).sort();
+                        const months = [...new Set(rawData.map(row => findColumn(row, 'GMV Month')))].filter(Boolean);
+                        months.sort((a, b) => new Date('01-' + a) - new Date('01-' + b));
+
                         const mainSelect = document.getElementById('main-month-filter');
                         mainSelect.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
-                        if(months.length > 0) mainSelect.value = months[months.length - 1]; 
+
+                        const now = new Date();
+                        const currentMonthFormatted = now.toLocaleString('en-US', { month: 'short' }) + '-' + now.getFullYear();
+                        if (months.includes(currentMonthFormatted)) mainSelect.value = currentMonthFormatted;
+                        else mainSelect.value = months[months.length - 1];
+
                         updateView();
-                    } else showError("Dataset empty.");
-                },
-                error: (err) => showError("Connection error.")
+                    } else showError("No data found.");
+                }
             });
             document.getElementById('main-month-filter').addEventListener('change', updateView);
         }
 
         function updateView() {
             const selectedMonth = document.getElementById('main-month-filter').value;
-            if (!selectedMonth) return;
-            
-            document.getElementById('view-subtitle').textContent = `GMV Month: ${selectedMonth}`;
-            document.getElementById('matrix-month-label').textContent = selectedMonth;
-
             const monthData = rawData.filter(row => String(findColumn(row, 'GMV Month')) === selectedMonth);
+
+            // Filters based on "Trade Status"
             const closedData = monthData.filter(row => String(findColumn(row, 'Trade Status') || '').toLowerCase().trim() === 'closed');
-            
+
+            // Core Metrics - GMV & Margin only from closed trades
+            const totalExecuted = monthData.length;
+            const totalClosed = closedData.length;
             const gmv = closedData.reduce((sum, row) => sum + cleanNumber(findColumn(row, 'Sale value( Contract/GMV)')), 0);
             const margin = closedData.reduce((sum, row) => sum + cleanNumber(findColumn(row, 'Trade Margin')), 0);
-            
-            const activeBuyers = new Set(closedData.map(r => String(findColumn(r, 'buyer_id') || '').trim()).filter(Boolean));
-            const activeSellers = new Set(closedData.map(r => String(findColumn(r, 'sellerName') || '').trim()).filter(Boolean));
-            
-            const execCount = monthData.length;
-            const closedCount = closedData.length;
-            const openTrades = execCount - closedCount;
-            const avgGmv = closedCount > 0 ? (gmv / closedCount) : 0;
-            const marginEfficiency = gmv > 0 ? (margin / gmv) : 0;
-            
-            // Formula: Open Trades * Avg GMV * Current Margin %
-            const potentialMargin = openTrades * avgGmv * marginEfficiency;
 
-            document.getElementById('stat-executed').textContent = execCount.toLocaleString();
-            document.getElementById('stat-closed').textContent = closedCount.toLocaleString();
-            document.getElementById('stat-buyers').textContent = activeBuyers.size.toLocaleString();
-            document.getElementById('stat-sellers').textContent = activeSellers.size.toLocaleString();
+            const marginPercVal = gmv > 0 ? (margin / gmv) : 0;
+            const marginPercStr = (marginPercVal * 100).toFixed(2);
+            const avgGmv = totalClosed > 0 ? (gmv / totalClosed) : 0;
+
+            // New Potential Margin Formula: (Executed - Closed) * Avg GMV * Net Margin %
+            const potentialMargin = (totalExecuted - totalClosed) * avgGmv * marginPercVal;
+
+            const avgMargin = totalClosed > 0 ? (margin / totalClosed) : 0;
+
+            // COUNTS - Active Buyers/Sellers only from CLOSED trades
+            const uniqueBuyers = [...new Set(closedData.map(row => findColumn(row, 'Buyer Name')))].filter(Boolean).length;
+            const uniqueSellers = [...new Set(closedData.map(row => findColumn(row, 'sellerName')))].filter(Boolean).length;
+
+            // Update Top Bar
+            document.getElementById('stat-executed').textContent = totalExecuted.toLocaleString();
+            document.getElementById('stat-closed').textContent = totalClosed.toLocaleString();
+            document.getElementById('stat-buyers').textContent = uniqueBuyers.toLocaleString();
+            document.getElementById('stat-sellers').textContent = uniqueSellers.toLocaleString();
             document.getElementById('stat-gmv').textContent = '₹' + Math.round(gmv).toLocaleString();
-            document.getElementById('stat-avg-gmv').textContent = 'Avg: ₹' + Math.round(avgGmv).toLocaleString();
             document.getElementById('stat-margin').textContent = '₹' + Math.round(margin).toLocaleString();
-            document.getElementById('stat-perc').textContent = (marginEfficiency * 100).toFixed(2) + '%';
+            document.getElementById('stat-avg-gmv').textContent = '₹' + Math.round(avgGmv).toLocaleString();
             document.getElementById('stat-potential').textContent = '₹' + Math.round(potentialMargin).toLocaleString();
 
+            // Update Net Margin % View (Green highlighted)
+            document.getElementById('net-margin-perc-display').textContent = marginPercStr + '%';
+            document.getElementById('net-avg-margin').textContent = '₹' + Math.round(avgMargin).toLocaleString();
+            document.getElementById('net-margin-progress').style.width = Math.min(parseFloat(marginPercStr) * 10, 100) + '%';
+
             renderNPMatrix(monthData);
-            
+
+            // Category Margin Row
             CATEGORIES.forEach(cat => {
                 const catData = monthData.filter(row => {
                     const sku = String(findColumn(row, 'Sku Category') || '').toLowerCase();
-                    if (cat === 'Others') return (!sku.includes('onion') && !sku.includes('garlic') && !sku.includes('ginger'));
-                    return sku.includes(cat.toLowerCase());
+                    const isClosed = String(findColumn(row, 'Trade Status') || '').toLowerCase().trim() === 'closed';
+                    const matches = cat === 'Others' ? (!sku.includes('onion') && !sku.includes('garlic') && !sku.includes('ginger')) : sku.includes(cat.toLowerCase());
+                    return matches && isClosed;
+                });
+
+                const cGmv = catData.reduce((sum, r) => sum + cleanNumber(findColumn(r, 'Sale value( Contract/GMV)')), 0);
+                const cMargin = catData.reduce((sum, r) => sum + cleanNumber(findColumn(r, 'Trade Margin')), 0);
+                const cPerc = cGmv > 0 ? (cMargin / cGmv * 100).toFixed(2) : '0.00';
+
+                const elId = `margin-perc-${cat.toLowerCase()}`;
+                const barId = `bar-${cat.toLowerCase()}`;
+                if (document.getElementById(elId)) document.getElementById(elId).textContent = cPerc + '%';
+                if (document.getElementById(barId)) document.getElementById(barId).style.width = Math.min(parseFloat(cPerc) * 10, 100) + '%';
+            });
+
+            // Zonal Tables
+            CATEGORIES.forEach(cat => {
+                const catData = monthData.filter(row => {
+                    const sku = String(findColumn(row, 'Sku Category') || '').toLowerCase();
+                    return cat === 'Others' ? (!sku.includes('onion') && !sku.includes('garlic') && !sku.includes('ginger')) : sku.includes(cat.toLowerCase());
                 });
                 renderZonalTable(catData, cat);
             });
 
             document.getElementById('top-metrics-row').classList.remove('hidden');
+            document.getElementById('net-margin-row').classList.remove('hidden');
+            document.getElementById('margin-analysis-row').classList.remove('hidden');
             document.getElementById('initial-loader').classList.add('hidden');
         }
 
@@ -345,12 +657,10 @@
                 const rawCat = String(findColumn(row, 'Sku Category') || '').toLowerCase();
                 const rawMode = String(findColumn(row, 'Order Mode') || '').toLowerCase();
                 const status = String(findColumn(row, 'Trade Status') || '').toLowerCase().trim();
-                
                 let catKey = 'Others';
                 if (rawCat.includes('onion')) catKey = 'Onion';
                 else if (rawCat.includes('garlic')) catKey = 'Garlic';
                 else if (rawCat.includes('ginger')) catKey = 'Ginger';
-                
                 let typeKey = rawMode.includes('commission') ? 'Commission' : 'Order';
                 const key = `${catKey}_${typeKey}`;
 
@@ -365,10 +675,10 @@
             });
 
             const rows = [
-                { label: 'Executed Trades', d: matrix.executed, f: 'int' }, 
-                { label: 'Closed Trades', d: matrix.closed, f: 'int', hl_count: true }, 
-                { label: 'GMV', d: matrix.gmv, f: 'curr' }, 
-                { label: 'Margin', d: matrix.margin, f: 'curr', hl: true }, 
+                { label: 'Executed Trades', d: matrix.executed, f: 'int' },
+                { label: 'Closed Trades', d: matrix.closed, f: 'int', hl: false },
+                { label: 'GMV', d: matrix.gmv, f: 'curr' },
+                { label: 'Margin', d: matrix.margin, f: 'curr', hl: true },
                 { label: 'Margin %', isP: true, hl: true }
             ];
 
@@ -377,33 +687,21 @@
                 let rowTotal = 0;
                 CATEGORIES.forEach(c => TYPES.forEach(t => {
                     const k = `${c}_${t}`;
-                    let val = r.isP ? (matrix.gmv[k] > 0 ? (matrix.margin[k]/matrix.gmv[k]*100).toFixed(2)+'%' : '0.00%') : (r.f === 'curr' ? '₹'+Math.round(r.d[k]).toLocaleString() : r.d[k].toLocaleString());
-                    if(!r.isP) rowTotal += r.d[k];
-                    
-                    let cellClass = r.hl ? 'highlight-green' : (t==='Order'?'text-slate-800':'text-slate-400');
-                    if(r.hl_count) cellClass = 'text-emerald-600 font-black';
-
+                    let val = r.isP ? (matrix.gmv[k] > 0 ? (matrix.margin[k] / matrix.gmv[k] * 100).toFixed(2) + '%' : '0.00%') : (r.f === 'curr' ? '₹' + Math.round(r.d[k]).toLocaleString() : r.d[k].toLocaleString());
+                    if (!r.isP) rowTotal += r.d[k];
+                    let cellClass = r.hl ? 'highlight-green' : (t === 'Order' ? 'text-slate-800' : 'text-slate-400');
                     html += `<td class="border-none font-bold ${cellClass}">${val}</td>`;
                 }));
-                let fTotal = r.isP ? (Object.values(matrix.gmv).reduce((a,b)=>a+b,0) > 0 ? (Object.values(matrix.margin).reduce((a,b)=>a+b,0)/Object.values(matrix.gmv).reduce((a,b)=>a+b,0)*100).toFixed(2)+'%' : '0.00%') : (r.f==='curr' ? '₹'+Math.round(rowTotal).toLocaleString() : rowTotal.toLocaleString());
-                return html + `<td class="total-col border-none text-center font-black ${r.hl || r.hl_count ?'text-emerald-600':''}">${fTotal}</td></tr>`;
+                let fTotal = r.isP ? (Object.values(matrix.gmv).reduce((a, b) => a + b, 0) > 0 ? (Object.values(matrix.margin).reduce((a, b) => a + b, 0) / Object.values(matrix.gmv).reduce((a, b) => a + b, 0) * 100).toFixed(2) + '%' : '0.00%') : (r.f === 'curr' ? '₹' + Math.round(rowTotal).toLocaleString() : rowTotal.toLocaleString());
+                return html + `<td class="total-col border-none text-center font-black ${r.hl ? 'text-emerald-600' : ''}">${fTotal}</td></tr>`;
             }).join('');
             document.getElementById('matrix-container').classList.remove('hidden');
         }
 
         function renderZonalTable(data, cat) {
-            const containerId = `${cat.toLowerCase()}-zonal`;
-            const bodyId = `body-${cat.toLowerCase()}`;
-            const container = document.getElementById(containerId);
-            const body = document.getElementById(bodyId);
-            
-            if (!container || !body) return;
-
-            if (data.length === 0) { 
-                container.classList.add('hidden'); 
-                return; 
-            }
-            
+            const body = document.getElementById(`body-${cat.toLowerCase()}`);
+            const container = document.getElementById(`${cat.toLowerCase()}-zonal`);
+            if (data.length === 0) { container.classList.add('hidden'); return; }
             container.classList.remove('hidden');
             const zones = {};
             data.forEach(row => {
@@ -417,17 +715,15 @@
                     zones[zone].margin += cleanNumber(findColumn(row, 'Trade Margin'));
                 }
             });
-
-            const list = Object.entries(zones).sort((a,b) => b[1].gmv - a[1].gmv);
-            body.innerHTML = list.map(([name, m]) => {
+            body.innerHTML = Object.entries(zones).map(([name, m]) => {
                 const perc = m.gmv > 0 ? (m.margin / m.gmv * 100).toFixed(2) : '0.00';
                 return `<tr class="group drill-down-row" onclick="showCategoryZoneDetails('${m.rawOwner}', '${name}', '${cat}')">
                     <td class="text-left px-8 py-5 font-black text-slate-800 text-xs border-none group-hover:text-blue-600">${name}</td>
-                    <td class="border-none font-bold text-slate-600">${m.executed}</td>
-                    <td class="border-none font-bold text-slate-600">${m.closed}</td>
-                    <td class="border-none font-bold text-slate-800">₹${Math.round(m.gmv).toLocaleString()}</td>
+                    <td class="border-none font-bold">${m.executed}</td>
+                    <td class="border-none font-bold">${m.closed}</td>
+                    <td class="border-none font-bold">₹${Math.round(m.gmv).toLocaleString()}</td>
                     <td class="border-none font-bold highlight-green">₹${Math.round(m.margin).toLocaleString()}</td>
-                    <td class="border-none"><span class="px-3 py-1 rounded-full text-[10px] font-black ${perc > 2.5 ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-500'}">${perc}%</span></td>
+                    <td class="border-none font-black text-emerald-600">${perc}%</td>
                 </tr>`;
             }).join('');
         }
@@ -442,21 +738,27 @@
 
             document.getElementById('detail-zone-name').textContent = displayName;
             document.getElementById('trade-detail-body').innerHTML = zoneData.map(row => {
-                const sVal = cleanNumber(findColumn(row, 'Sale value( Contract/GMV)'));
+                const purchaseVal = cleanNumber(findColumn(row, 'Purchase value'));
+                const gmv = cleanNumber(findColumn(row, 'Sale value( Contract/GMV)'));
+                const payout = cleanNumber(findColumn(row, 'Seller Payable(1% - not for all cases)'));
                 const margin = cleanNumber(findColumn(row, 'Trade Margin'));
-                const mPerc = sVal > 0 ? (margin/sVal*100).toFixed(2) : '0.00';
+                const mPerc = gmv > 0 ? (margin / gmv * 100).toFixed(2) : '0.00';
                 const status = String(findColumn(row, 'Trade Status') || '-').toUpperCase();
+                const buyerName = findColumn(row, 'Buyer Name') || '-';
+
                 return `<tr>
-                    <td class="text-left font-medium text-[11px]">${findColumn(row, 'contractDate') || '-'}</td>
-                    <td class="text-left font-bold text-slate-800">${findColumn(row, 'buyer_id') || '-'}</td>
-                    <td class="text-left">${findColumn(row, 'sellerName') || '-'}</td>
-                    <td class="text-right font-bold text-slate-800">₹${Math.round(sVal).toLocaleString()}</td>
-                    <td class="text-right font-bold highlight-green">₹${Math.round(margin).toLocaleString()}</td>
-                    <td class="text-right font-black text-blue-600">${mPerc}%</td>
-                    <td class="text-center"><span class="px-2 py-0.5 rounded text-[9px] font-black ${status==='CLOSED'?'bg-emerald-50 text-emerald-600':'bg-blue-50 text-blue-600'}">${status}</span></td>
+                    <td class="text-left font-medium text-[10px]">${findColumn(row, 'contractDate') || '-'}</td>
+                    <td class="text-left font-bold text-slate-900">${buyerName}</td>
+                    <td class="text-left truncate max-w-[120px]">${findColumn(row, 'sellerName') || '-'}</td>
+                    <td class="text-right font-medium">₹${Math.round(purchaseVal).toLocaleString()}</td>
+                    <td class="text-right font-black text-slate-900">₹${Math.round(gmv).toLocaleString()}</td>
+                    <td class="text-right font-medium text-orange-600">₹${Math.round(payout).toLocaleString()}</td>
+                    <td class="text-right font-black highlight-green">₹${Math.round(margin).toLocaleString()}</td>
+                    <td class="text-right font-black text-emerald-600">${mPerc}%</td>
+                    <td class="text-center"><span class="px-2 py-0.5 rounded text-[8px] font-black ${status === 'CLOSED' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}">${status}</span></td>
                 </tr>`;
             }).join('');
-            
+
             const container = document.getElementById('trade-detail-container');
             container.classList.remove('hidden');
             setTimeout(() => { container.style.transform = 'translateY(0)'; }, 10);
@@ -468,14 +770,15 @@
             setTimeout(() => { container.classList.add('hidden'); }, 300);
         }
 
-        function showError(msg) { 
-            const b = document.getElementById('error-box'); 
-            b.textContent = msg; 
-            b.classList.remove('hidden'); 
-            document.getElementById('initial-loader').classList.add('hidden'); 
+        function showError(msg) {
+            const b = document.getElementById('error-box');
+            b.textContent = msg;
+            b.classList.remove('hidden');
+            document.getElementById('initial-loader').classList.add('hidden');
         }
-        
-        window.onload = init;
+
+        // REMOVED window.onload = init and relying on button click only
     </script>
 </body>
+
 </html>
