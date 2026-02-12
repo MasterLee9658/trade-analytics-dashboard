@@ -45,59 +45,6 @@
             display: none;
         }
 
-        /* Metric Cards Styling based on screenshots */
-        .metric-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 2.5rem;
-            box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.03);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-height: 120px;
-        }
-
-        .metric-card-dark {
-            color: white;
-            border: none;
-        }
-
-        .bg-dark-blue {
-            background-color: #0f172a;
-        }
-
-        /* Closed GMV */
-        .bg-vivid-green {
-            background-color: #059669;
-        }
-
-        /* Margin */
-        .bg-vivid-orange {
-            background-color: #ea580c;
-        }
-
-        /* Potential */
-        .bg-vivid-indigo {
-            background-color: #4f46e5;
-        }
-
-        /* Avg GMV Trade */
-
-        .label-text {
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
-        }
-
-        .value-text {
-            font-size: 1.85rem;
-            font-weight: 800;
-            line-height: 1;
-        }
-
-        /* Table Styles */
         .summary-table th {
             border: 1px solid #f1f5f9;
             text-align: center;
@@ -114,11 +61,21 @@
             transition: all 0.2s;
         }
 
+        .summary-table tr:hover td {
+            background-color: #f8fafc;
+        }
+
         .sub-header th {
             font-size: 0.6rem;
             color: #94a3b8;
             letter-spacing: 0.05em;
             border-top: none;
+        }
+
+        .total-col {
+            font-weight: 800;
+            background-color: #f8fafc;
+            color: #1e293b;
         }
 
         .loader {
@@ -142,11 +99,49 @@
 
         .drill-down-row {
             cursor: pointer;
-            transition: transform 0.1s;
+            transition: background-color 0.2s;
         }
 
-        .drill-down-row:active {
-            transform: scale(0.99);
+        .drill-down-row:hover {
+            background-color: #f1f5f9 !important;
+        }
+
+        .detail-table th {
+            font-size: 0.6rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: #f8fafc;
+            padding: 12px 8px;
+            font-weight: 800;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .detail-table td {
+            font-size: 0.7rem;
+            padding: 10px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+
+        .zonal-card {
+            border-radius: 2rem;
+            overflow: hidden;
+            background: white;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 4px 15px -1px rgb(0 0 0 / 0.05);
+        }
+
+        .glass-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 2rem;
+            border: 1px solid #ffffff;
+            box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
         }
 
         .highlight-green {
@@ -167,12 +162,61 @@
             border-radius: 6px;
         }
 
-        .zonal-card {
-            border-radius: 2rem;
-            overflow: hidden;
-            background: white;
-            border: 1px solid #f1f5f9;
-            box-shadow: 0 4px 15px -1px rgb(0 0 0 / 0.05);
+        .cat-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .split-box {
+            display: flex;
+            gap: 1rem;
+            align-items: stretch;
+        }
+
+        .mmu-box {
+            flex: 2.2;
+        }
+
+        .margin-box {
+            flex: 1;
+        }
+
+        .pill-stat {
+            border-radius: 1rem;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        /* Risk View Styles */
+        .risk-view-section {
+            border-top: 2px dashed #fee2e2;
+            padding-top: 3rem;
+            margin-top: 4rem;
+        }
+
+        .risk-table th {
+            font-size: 0.65rem;
+            color: #64748b;
+            font-weight: 800;
+            text-transform: uppercase;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px;
+        }
+
+        .risk-table td {
+            font-size: 0.75rem;
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .aging-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 10px;
+            display: inline-block;
         }
     </style>
 </head>
@@ -192,23 +236,31 @@
     </div>
     <!-- LOGIN OVERLAY END -->
 
-    <div id="dashboard-content" class="max-w-[1600px] mx-auto px-6 py-8">
-
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
-            <div>
-                <h1 class="text-3xl font-black text-slate-900">Non-Perishables-Commerce</h1>
-                <p class="text-[10px] text-blue-600 font-bold uppercase tracking-[0.3em]">NP Business Operations</p>
+    <div id="dashboard-content" class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header Controls -->
+        <div class="relative flex flex-col md:flex-row justify-between items-end md:items-center gap-6 mb-10">
+            <div class="space-y-1 z-10">
+                <h1 class="text-4xl font-black text-slate-900 tracking-tight">Non-Perishables Commerce</h1>
+                <p id="view-subtitle" class="text-[10px] text-blue-600 font-bold uppercase tracking-[0.3em]">Business
+                    Intelligence Ledger</p>
             </div>
-            <div class="flex items-center gap-4">
-                <div class="bg-white px-6 py-3 rounded-full shadow-sm border border-slate-200 flex items-center gap-4">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Period</span>
+
+            <!-- CENTER LOGO -->
+            <div
+                class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden md:block z-0 pointer-events-none">
+                <img src="https://mma.prnewswire.com/media/1723381/Ninjacart_Logo.jpg" alt="Ninjacart"
+                    class="h-16 object-contain mix-blend-multiply opacity-90">
+            </div>
+
+            <div class="flex items-center gap-4 z-10">
+                <div class="bg-white p-2 px-5 rounded-full shadow-sm border border-slate-200 flex items-center gap-4">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Select Month</span>
                     <select id="main-month-filter"
                         class="bg-transparent border-none text-slate-900 font-extrabold text-sm focus:ring-0 cursor-pointer outline-none"></select>
                 </div>
                 <!-- Refresh Button -->
                 <button onclick="init()" title="Refresh Data"
-                    class="bg-white p-3 rounded-full shadow-sm border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-200 hover:shadow-md transition-all active:scale-95">
+                    class="bg-white p-2.5 rounded-full shadow-sm border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-200 hover:shadow-md transition-all active:scale-95">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                         stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -218,93 +270,226 @@
             </div>
         </div>
 
-        <!-- Metric Grid: Highlighted Top View -->
-        <div id="top-metrics-row"
-            class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-5 mb-8">
-            <!-- Basic Stats -->
-            <div class="metric-card">
-                <p class="label-text text-slate-400">Executed</p>
-                <h3 id="stat-executed" class="value-text text-slate-800">0</h3>
-            </div>
-            <div class="metric-card">
-                <p class="label-text text-emerald-600">Closed</p>
-                <h3 id="stat-closed" class="value-text text-emerald-600">0</h3>
-            </div>
-            <div class="metric-card">
-                <p class="label-text text-blue-600">Active Buyers</p>
-                <h3 id="stat-buyers-total" class="value-text text-blue-600">0</h3>
-                <div class="flex gap-4 mt-2 pt-2 border-t border-slate-50">
-                    <div>
-                        <p class="text-[8px] font-bold text-amber-500 uppercase">FTA</p>
-                        <p id="stat-buyers-fta" class="text-xs font-black">0</p>
+        <!-- Metric Grid -->
+        <div id="top-metrics-row" class="hidden mb-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-4">
+                <div class="glass-card">
+                    <p class="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-2">Executed</p>
+                    <h3 id="stat-executed" class="text-2xl font-black text-slate-800">0</h3>
+                </div>
+                <div class="glass-card">
+                    <p class="text-emerald-600 text-[10px] uppercase font-black tracking-widest mb-2">Closed</p>
+                    <h3 id="stat-closed" class="text-2xl font-black text-emerald-600">0</h3>
+                </div>
+
+                <div class="glass-card xl:col-span-2">
+                    <p class="text-blue-600 text-[10px] uppercase font-black tracking-widest mb-2">Active Buyers</p>
+                    <div class="flex items-baseline gap-2 mb-2">
+                        <h3 id="stat-buyers-total" class="text-3xl font-black text-blue-600">0</h3>
                     </div>
-                    <div>
-                        <p class="text-[8px] font-bold text-indigo-500 uppercase">Retention</p>
-                        <p id="stat-buyers-ret" class="text-xs font-black">0</p>
+                    <div class="flex items-center gap-2 pt-2 border-t border-slate-50">
+                        <div class="flex-1 bg-amber-50 rounded-xl p-2 text-center">
+                            <p class="text-[8px] font-black text-amber-600 uppercase">FTA</p>
+                            <p id="stat-buyers-fta" class="text-xs font-black text-amber-700">0</p>
+                        </div>
+                        <div class="flex-1 bg-indigo-50 rounded-xl p-2 text-center">
+                            <p class="text-[8px] font-black text-indigo-600 uppercase">Retention</p>
+                            <p id="stat-buyers-ret" class="text-xs font-black text-indigo-700">0</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="metric-card">
-                <p class="label-text text-purple-600">Sellers</p>
-                <h3 id="stat-sellers" class="value-text text-purple-600">0</h3>
-            </div>
 
-            <!-- Highlighted Dark Cards -->
-            <div class="metric-card metric-card-dark bg-dark-blue">
-                <p class="label-text opacity-70">Closed GMV</p>
-                <h3 id="stat-gmv" class="value-text">₹0</h3>
-            </div>
-            <div class="metric-card metric-card-dark bg-vivid-green">
-                <p class="label-text opacity-70">Margin</p>
-                <h3 id="stat-margin" class="value-text">₹0</h3>
-            </div>
-            <div class="metric-card metric-card-dark bg-vivid-orange">
-                <p class="label-text opacity-70">Potential</p>
-                <h3 id="stat-potential" class="value-text">₹0</h3>
-            </div>
-            <div class="metric-card metric-card-dark bg-vivid-indigo md:col-span-2">
-                <p class="label-text opacity-70">Avg GMV / Trade</p>
-                <h3 id="stat-avg-gmv-trade" class="value-text">₹0</h3>
-                <p class="text-[8px] mt-1 opacity-50 uppercase font-bold tracking-widest">Total GMV / No of Closed Trade
-                </p>
+                <div class="glass-card">
+                    <p class="text-purple-600 text-[10px] uppercase font-black tracking-widest mb-2">Sellers</p>
+                    <h3 id="stat-sellers" class="text-2xl font-black text-purple-600">0</h3>
+                </div>
+                <div class="glass-card bg-slate-900 text-white border-none">
+                    <p class="text-slate-400 text-[9px] uppercase font-black tracking-widest mb-1">Closed GMV</p>
+                    <h3 id="stat-gmv" class="text-xl font-black">₹0</h3>
+                </div>
+                <div class="glass-card bg-emerald-600 text-white border-none">
+                    <p class="text-emerald-100 text-[9px] uppercase font-black tracking-widest mb-1">Margin</p>
+                    <h3 id="stat-margin" class="text-xl font-black">₹0</h3>
+                </div>
+                <div class="glass-card bg-orange-600 text-white border-none xl:col-span-2">
+                    <p class="text-orange-100 text-[9px] uppercase font-black tracking-widest mb-1">Potential Additional
+                        Margin</p>
+                    <h3 id="stat-potential" class="text-xl font-black">₹0</h3>
+                </div>
+                <div class="glass-card border-2 border-blue-100 xl:col-span-1 flex flex-col justify-center">
+                    <p class="text-blue-500 text-[10px] uppercase font-black tracking-widest mb-2">Avg GMV / Trade</p>
+                    <h3 id="stat-avg-gmv-trade" class="text-xl font-black text-slate-800 tracking-tight">₹0</h3>
+                </div>
             </div>
         </div>
 
-        <!-- Business Efficiency Bar -->
+        <!-- Net Margin View -->
         <div id="net-margin-row" class="hidden mb-10">
-            <div class="bg-white p-8 rounded-[2.5rem] border-2 border-emerald-50">
-                <div class="flex flex-col lg:flex-row items-center justify-between gap-10">
-                    <div class="w-full lg:w-1/3">
+            <div class="glass-card bg-white border-2 border-emerald-100 bg-emerald-50/10">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div class="space-y-1">
                         <p class="text-[11px] font-black uppercase tracking-widest text-emerald-600">Business Efficiency
                         </p>
                         <h2 class="text-3xl font-black text-slate-800">Net Margin %</h2>
                     </div>
-                    <div class="flex-1 w-full space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Profitability
-                                Ratio</span>
-                            <span id="net-margin-perc-display" class="text-4xl font-black text-emerald-600">0%</span>
+                    <div class="flex flex-1 max-w-2xl items-center gap-10">
+                        <div class="flex-1 space-y-3">
+                            <div class="flex justify-between items-baseline">
+                                <span
+                                    class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Profitability
+                                    Ratio</span>
+                                <span id="net-margin-perc-display"
+                                    class="text-4xl font-black text-emerald-600">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div id="net-margin-progress" class="progress-fill bg-emerald-600" style="width: 0%">
+                                </div>
+                            </div>
                         </div>
-                        <div class="progress-bar">
-                            <div id="net-margin-progress" class="progress-fill bg-emerald-500" style="width: 0%"></div>
+                        <div class="h-16 w-[1px] bg-slate-200 hidden md:block"></div>
+                        <div class="text-right">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Yield per
+                                Trade</p>
+                            <h4 id="net-avg-margin" class="text-2xl font-black text-slate-800 tracking-tight">₹0</h4>
                         </div>
-                    </div>
-                    <div class="lg:pl-10 border-l border-slate-100">
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Yield per Trade
-                        </p>
-                        <h4 id="net-avg-margin" class="text-2xl font-black text-slate-800">₹0</h4>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div id="matrix-container"
-            class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden mb-12 hidden">
-            <div class="p-8 pb-4 flex justify-between items-center">
-                <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Category Matrix</h3>
+        <!-- Category MMU -->
+        <div id="category-mmu-row" class="hidden mb-12 space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Onion -->
+                <div class="cat-group">
+                    <h3 class="px-2 text-[11px] font-black text-orange-600 uppercase tracking-[0.2em]">Onion Category
+                    </h3>
+                    <div class="split-box">
+                        <div class="mmu-box glass-card border-l-4 border-l-orange-400 !p-5">
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="pill-stat bg-slate-50">
+                                    <p class="text-[7px] font-bold text-slate-400 uppercase mb-1">Act</p>
+                                    <p id="mmu-total-onion" class="text-sm font-black text-slate-800">0</p>
+                                </div>
+                                <div class="pill-stat bg-amber-50">
+                                    <p class="text-[7px] font-bold text-amber-500 uppercase mb-1">FTA</p>
+                                    <p id="mmu-fta-onion" class="text-sm font-black text-amber-700">0</p>
+                                </div>
+                                <div class="pill-stat bg-indigo-50">
+                                    <p class="text-[7px] font-bold text-indigo-500 uppercase mb-1">Ret</p>
+                                    <p id="mmu-ret-onion" class="text-sm font-black text-indigo-700">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="margin-box glass-card border-l-4 border-l-emerald-400 !p-5 text-center flex flex-col justify-center">
+                            <p id="mmu-perc-onion" class="text-xl font-black text-emerald-600">0%</p>
+                            <div class="mt-2 progress-bar h-1.5">
+                                <div id="mmu-bar-onion" class="progress-fill bg-emerald-500" style="width:0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Garlic -->
+                <div class="cat-group">
+                    <h3 class="px-2 text-[11px] font-black text-blue-600 uppercase tracking-[0.2em]">Garlic Category
+                    </h3>
+                    <div class="split-box">
+                        <div class="mmu-box glass-card border-l-4 border-l-blue-400 !p-5">
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="pill-stat bg-slate-50">
+                                    <p class="text-[7px] font-bold text-slate-400 uppercase mb-1">Act</p>
+                                    <p id="mmu-total-garlic" class="text-sm font-black text-slate-800">0</p>
+                                </div>
+                                <div class="pill-stat bg-amber-50">
+                                    <p class="text-[7px] font-bold text-amber-500 uppercase mb-1">FTA</p>
+                                    <p id="mmu-fta-garlic" class="text-sm font-black text-amber-700">0</p>
+                                </div>
+                                <div class="pill-stat bg-indigo-50">
+                                    <p class="text-[7px] font-bold text-indigo-500 uppercase mb-1">Ret</p>
+                                    <p id="mmu-ret-garlic" class="text-sm font-black text-indigo-700">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="margin-box glass-card border-l-4 border-l-emerald-400 !p-5 text-center flex flex-col justify-center">
+                            <p id="mmu-perc-garlic" class="text-xl font-black text-emerald-600">0%</p>
+                            <div class="mt-2 progress-bar h-1.5">
+                                <div id="mmu-bar-garlic" class="progress-fill bg-emerald-500" style="width:0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Ginger -->
+                <div class="cat-group">
+                    <h3 class="px-2 text-[11px] font-black text-purple-600 uppercase tracking-[0.2em]">Ginger Category
+                    </h3>
+                    <div class="split-box">
+                        <div class="mmu-box glass-card border-l-4 border-l-purple-400 !p-5">
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="pill-stat bg-slate-50">
+                                    <p class="text-[7px] font-bold text-slate-400 uppercase mb-1">Act</p>
+                                    <p id="mmu-total-ginger" class="text-sm font-black text-slate-800">0</p>
+                                </div>
+                                <div class="pill-stat bg-amber-50">
+                                    <p class="text-[7px] font-bold text-amber-500 uppercase mb-1">FTA</p>
+                                    <p id="mmu-fta-ginger" class="text-sm font-black text-amber-700">0</p>
+                                </div>
+                                <div class="pill-stat bg-indigo-50">
+                                    <p class="text-[7px] font-bold text-indigo-500 uppercase mb-1">Ret</p>
+                                    <p id="mmu-ret-ginger" class="text-sm font-black text-indigo-700">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="margin-box glass-card border-l-4 border-l-emerald-400 !p-5 text-center flex flex-col justify-center">
+                            <p id="mmu-perc-ginger" class="text-xl font-black text-emerald-600">0%</p>
+                            <div class="mt-2 progress-bar h-1.5">
+                                <div id="mmu-bar-ginger" class="progress-fill bg-emerald-500" style="width:0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Others -->
+                <div class="cat-group">
+                    <h3 class="px-2 text-[11px] font-black text-slate-600 uppercase tracking-[0.2em]">Others Category
+                    </h3>
+                    <div class="split-box">
+                        <div class="mmu-box glass-card border-l-4 border-l-slate-400 !p-5">
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="pill-stat bg-slate-50">
+                                    <p class="text-[7px] font-bold text-slate-400 uppercase mb-1">Act</p>
+                                    <p id="mmu-total-others" class="text-sm font-black text-slate-800">0</p>
+                                </div>
+                                <div class="pill-stat bg-amber-50">
+                                    <p class="text-[7px] font-bold text-amber-500 uppercase mb-1">FTA</p>
+                                    <p id="mmu-fta-others" class="text-sm font-black text-amber-700">0</p>
+                                </div>
+                                <div class="pill-stat bg-indigo-50">
+                                    <p class="text-[7px] font-bold text-indigo-500 uppercase mb-1">Ret</p>
+                                    <p id="mmu-ret-others" class="text-sm font-black text-indigo-700">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="margin-box glass-card border-l-4 border-l-emerald-400 !p-5 text-center flex flex-col justify-center">
+                            <p id="mmu-perc-others" class="text-xl font-black text-emerald-600">0%</p>
+                            <div class="mt-2 progress-bar h-1.5">
+                                <div id="mmu-bar-others" class="progress-fill bg-emerald-500" style="width:0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="overflow-x-auto px-6 pb-8">
+        </div>
+
+        <!-- Commodity Matrix -->
+        <div id="matrix-container"
+            class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mb-12 hidden">
+            <div class="p-8 pb-4">
+                <h3 class="text-lg font-black text-slate-800 tracking-tight">Commodity Matrix</h3>
+            </div>
+            <div class="overflow-x-auto px-4 pb-8">
                 <table class="w-full border-separate border-spacing-1 summary-table">
                     <thead>
                         <tr>
@@ -312,16 +497,16 @@
                                 class="text-left px-6 py-4 text-slate-400 font-black uppercase tracking-widest border-none">
                                 Metric</th>
                             <th colspan="2"
-                                class="bg-orange-50 rounded-t-2xl font-black uppercase text-[10px] tracking-widest border-none py-4 text-orange-600">
+                                class="bg-orange-50 font-black uppercase text-[10px] tracking-widest border-none py-4">
                                 Onion</th>
                             <th colspan="2"
-                                class="bg-blue-50 rounded-t-2xl font-black uppercase text-[10px] tracking-widest border-none py-4 text-blue-600">
+                                class="bg-blue-50 font-black uppercase text-[10px] tracking-widest border-none py-4">
                                 Garlic</th>
                             <th colspan="2"
-                                class="bg-purple-50 rounded-t-2xl font-black uppercase text-[10px] tracking-widest border-none py-4 text-purple-600">
+                                class="bg-purple-50 font-black uppercase text-[10px] tracking-widest border-none py-4">
                                 Ginger</th>
                             <th colspan="2"
-                                class="bg-slate-50 rounded-t-2xl font-black uppercase text-[10px] tracking-widest border-none py-4 text-slate-600">
+                                class="bg-slate-50 font-black uppercase text-[10px] tracking-widest border-none py-4">
                                 Others</th>
                             <th rowspan="2"
                                 class="bg-slate-800 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest border-none px-6">
@@ -343,9 +528,26 @@
             </div>
         </div>
 
+        <!-- Regional Views -->
         <div id="regional-views" class="space-y-12"></div>
 
-        <!-- Trade Details Drawer -->
+        <!-- Aging Risk Intelligence Section -->
+        <div id="risk-view-container" class="risk-view-section hidden">
+            <div class="flex items-center justify-between mb-8">
+                <div class="space-y-1">
+                    <h2 class="text-2xl font-black text-red-600">Aging Risk Intelligence</h2>
+                    <p class="text-[9px] text-red-400 font-bold uppercase tracking-widest">Open Trades > 7 Days Delay
+                    </p>
+                </div>
+                <div class="bg-red-50 px-4 py-2 rounded-2xl border border-red-100">
+                    <span class="text-[10px] font-black text-red-600 uppercase">Critical Risks: </span>
+                    <span id="risk-trade-count" class="text-lg font-black text-red-700">0</span>
+                </div>
+            </div>
+            <div id="risk-category-tables" class="space-y-10"></div>
+        </div>
+
+        <!-- Details Drawer -->
         <div id="trade-detail-container"
             class="fixed inset-x-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 ease-out bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-t-[3rem] h-[90vh] border-t border-slate-200 overflow-hidden hidden">
             <div class="sticky top-0 bg-white p-8 pb-4 flex justify-between items-center border-b border-slate-50 z-30">
@@ -361,14 +563,15 @@
                     </svg></button>
             </div>
             <div class="overflow-x-auto overflow-y-auto h-[calc(90vh-100px)] p-6">
-                <table class="w-full text-xs">
+                <table class="w-full detail-table">
                     <thead>
-                        <tr class="text-slate-400 uppercase font-black tracking-widest border-b-2 border-slate-100">
-                            <th class="text-left py-4">Date</th>
-                            <th class="text-left">Buyer</th>
+                        <tr>
+                            <th class="text-left">Date</th>
+                            <th class="text-left">Buyer Name</th>
                             <th class="text-left">Seller</th>
-                            <th class="text-right">Value</th>
+                            <th class="text-right">Purchase Value</th>
                             <th class="text-right">GMV</th>
+                            <th class="text-right">Seller Payout</th>
                             <th class="text-right">Margin</th>
                             <th class="text-right">Margin %</th>
                             <th class="text-center">Status</th>
@@ -381,7 +584,7 @@
 
         <div id="initial-loader" class="flex flex-col items-center justify-center py-32">
             <div class="loader mb-6"></div>
-            <p class="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">Processing Trade Data</p>
+            <p class="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">Syncing Intelligence</p>
         </div>
         <div id="error-box"
             class="hidden p-6 bg-red-50 text-red-700 rounded-3xl text-center border border-red-100 mb-4 font-bold text-sm">
@@ -394,28 +597,6 @@
         const CATEGORIES = ['Onion', 'Garlic', 'Ginger', 'Others'];
         const TYPES = ['Order', 'Comm..'];
         const REGION_MAP = { "Nagendra": "Nashik Zone", "Sachin": "Nagar Zone", "Nanda Kishore": "Southern Region", "Manpreet": "MP Cluster", "Central": "Central Hub" };
-
-        // --- PASSWORD PROTECTION SCRIPT START ---
-        function checkPassword() {
-            const input = document.getElementById('password-input').value;
-            const error = document.getElementById('login-error');
-            const overlay = document.getElementById('login-overlay');
-            const content = document.getElementById('dashboard-content');
-
-            if (input === 'admin123') { // Simple client-side check
-                overlay.style.display = 'none';
-                content.style.display = 'block';
-                init(); // Start loading data only after login
-            } else {
-                error.classList.remove('hidden');
-            }
-        }
-
-        // Allow pressing Enter to submit password
-        document.getElementById('password-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') checkPassword();
-        });
-        // --- PASSWORD PROTECTION SCRIPT END ---
 
         function findColumn(row, targetName) {
             if (!row) return null;
@@ -443,7 +624,6 @@
                         rawData = results.data;
                         const months = [...new Set(rawData.map(row => findColumn(row, 'GMV Month')))].filter(Boolean);
                         months.sort((a, b) => new Date('01-' + a) - new Date('01-' + b));
-
                         const mainSelect = document.getElementById('main-month-filter');
                         const currentVal = mainSelect.value;
 
@@ -452,20 +632,42 @@
                         if (currentVal && months.includes(currentVal)) {
                             mainSelect.value = currentVal;
                         } else {
-                            // Default to latest
                             mainSelect.value = months[months.length - 1];
                         }
 
                         updateView();
-                    } else showError("No data found.");
+                    } else showError("No data found in the provided source.");
 
                     if (refreshIcon) refreshIcon.classList.remove('animate-spin');
                 }
             });
         }
 
-        // Bind event listener once
+        // Use 'change' listener only once
         document.getElementById('main-month-filter').addEventListener('change', updateView);
+
+        // --- PASSWORD PROTECTION SCRIPT START ---
+        function checkPassword() {
+            const input = document.getElementById('password-input').value;
+            const error = document.getElementById('login-error');
+            const overlay = document.getElementById('login-overlay');
+            const content = document.getElementById('dashboard-content');
+
+            if (input === 'admin123') { // Simple client-side check
+                overlay.style.display = 'none';
+                content.style.display = 'block';
+                init(); // Start loading data only after login
+            } else {
+                error.classList.remove('hidden');
+            }
+        }
+
+        // Allow pressing Enter to submit password
+        document.getElementById('password-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkPassword();
+        });
+        // --- PASSWORD PROTECTION SCRIPT END ---
+
 
         function updateView() {
             const selectedMonth = document.getElementById('main-month-filter').value;
@@ -476,38 +678,63 @@
             const totalClosed = closedData.length;
             const gmv = closedData.reduce((sum, row) => sum + cleanNumber(findColumn(row, 'Sale value( Contract/GMV)')), 0);
             const margin = closedData.reduce((sum, row) => sum + cleanNumber(findColumn(row, 'Trade Margin')), 0);
+
+            const getBuyerId = (row) => findColumn(row, 'buyer_id') || findColumn(row, 'Buyer Name');
+            const activeBuyers = [...new Set(closedData.map(getBuyerId))].filter(Boolean);
+            const ftaBuyers = [...new Set(closedData.filter(row => String(findColumn(row, 'FTA Check') || '').toLowerCase().trim() === 'yes').map(getBuyerId))].filter(Boolean);
+
             const avgGmvPerTrade = totalClosed > 0 ? (gmv / totalClosed) : 0;
+            const netMarginPerc = gmv > 0 ? (margin / gmv) : 0;
+            const potentialMargin = (totalExecuted - totalClosed) * avgGmvPerTrade * netMarginPerc;
 
-            const activeBuyers = [...new Set(closedData.map(r => findColumn(r, 'buyer_id') || findColumn(r, 'Buyer Name')))].filter(Boolean);
-            const ftaBuyers = [...new Set(closedData
-                .filter(row => String(findColumn(row, 'FTA Check') || '').toLowerCase().trim() === 'yes')
-                .map(r => findColumn(r, 'buyer_id') || findColumn(r, 'Buyer Name'))
-            )].filter(Boolean);
-
-            const marginPercVal = gmv > 0 ? (margin / gmv) : 0;
-            const potentialMargin = (totalExecuted - totalClosed) * avgGmvPerTrade * marginPercVal;
-
-            document.getElementById('stat-executed').textContent = totalExecuted;
-            document.getElementById('stat-closed').textContent = totalClosed;
-            document.getElementById('stat-buyers-total').textContent = activeBuyers.length;
-            document.getElementById('stat-buyers-fta').textContent = ftaBuyers.length;
-            document.getElementById('stat-buyers-ret').textContent = activeBuyers.length - ftaBuyers.length;
+            document.getElementById('stat-executed').textContent = totalExecuted.toLocaleString();
+            document.getElementById('stat-closed').textContent = totalClosed.toLocaleString();
+            document.getElementById('stat-buyers-total').textContent = activeBuyers.length.toLocaleString();
+            document.getElementById('stat-buyers-fta').textContent = ftaBuyers.length.toLocaleString();
+            document.getElementById('stat-buyers-ret').textContent = (activeBuyers.length - ftaBuyers.length).toLocaleString();
             document.getElementById('stat-sellers').textContent = [...new Set(closedData.map(row => findColumn(row, 'sellerName')))].filter(Boolean).length;
             document.getElementById('stat-gmv').textContent = '₹' + Math.round(gmv).toLocaleString();
             document.getElementById('stat-margin').textContent = '₹' + Math.round(margin).toLocaleString();
             document.getElementById('stat-potential').textContent = '₹' + Math.round(potentialMargin).toLocaleString();
             document.getElementById('stat-avg-gmv-trade').textContent = '₹' + Math.round(avgGmvPerTrade).toLocaleString();
 
+            const marginPercVal = netMarginPerc;
             document.getElementById('net-margin-perc-display').textContent = (marginPercVal * 100).toFixed(2) + '%';
             document.getElementById('net-avg-margin').textContent = '₹' + Math.round(totalClosed > 0 ? margin / totalClosed : 0).toLocaleString();
-            document.getElementById('net-margin-progress').style.width = Math.min(marginPercVal * 100 * 5, 100) + '%';
+            document.getElementById('net-margin-progress').style.width = Math.min(marginPercVal * 100 * 10, 100) + '%';
 
             renderNPMatrix(monthData);
+            renderCategoryMMU(monthData);
             renderRegionalPerformance(monthData);
+            renderRiskView(monthData);
 
             document.getElementById('top-metrics-row').classList.remove('hidden');
             document.getElementById('net-margin-row').classList.remove('hidden');
+            document.getElementById('category-mmu-row').classList.remove('hidden');
             document.getElementById('initial-loader').classList.add('hidden');
+        }
+
+        function renderCategoryMMU(monthData) {
+            CATEGORIES.forEach(cat => {
+                const catClosed = monthData.filter(row => {
+                    const sku = String(findColumn(row, 'Sku Category') || '').toLowerCase();
+                    const matches = cat === 'Others' ? (!sku.includes('onion') && !sku.includes('garlic') && !sku.includes('ginger')) : sku.includes(cat.toLowerCase());
+                    return matches && String(findColumn(row, 'Trade Status') || '').toLowerCase().trim() === 'closed';
+                });
+                const cGmv = catClosed.reduce((sum, r) => sum + cleanNumber(findColumn(r, 'Sale value( Contract/GMV)')), 0);
+                const cMargin = catClosed.reduce((sum, r) => sum + cleanNumber(findColumn(r, 'Trade Margin')), 0);
+                const getBuyerId = (row) => findColumn(row, 'buyer_id') || findColumn(row, 'Buyer Name');
+                const cBuyers = [...new Set(catClosed.map(getBuyerId))].filter(Boolean);
+                const cFta = [...new Set(catClosed.filter(r => String(findColumn(r, 'FTA Check') || '').toLowerCase().trim() === 'yes').map(getBuyerId))].length;
+                const slug = cat.toLowerCase();
+                if (document.getElementById(`mmu-perc-${slug}`)) {
+                    document.getElementById(`mmu-perc-${slug}`).textContent = (cGmv > 0 ? (cMargin / cGmv * 100).toFixed(2) : '0.00') + '%';
+                    document.getElementById(`mmu-bar-${slug}`).style.width = (cGmv > 0 ? Math.min((cMargin / cGmv * 1000), 100) : 0) + '%';
+                    document.getElementById(`mmu-total-${slug}`).textContent = cBuyers.length;
+                    document.getElementById(`mmu-fta-${slug}`).textContent = cFta;
+                    document.getElementById(`mmu-ret-${slug}`).textContent = cBuyers.length - cFta;
+                }
+            });
         }
 
         function renderNPMatrix(data) {
@@ -516,47 +743,36 @@
                 const key = `${cat}_${type}`;
                 matrix.executed[key] = 0; matrix.closed[key] = 0; matrix.gmv[key] = 0; matrix.margin[key] = 0;
             }));
-
             data.forEach(row => {
                 const rawCat = String(findColumn(row, 'Sku Category') || '').toLowerCase();
                 const rawMode = String(findColumn(row, 'Order Mode') || '').toLowerCase();
+                const status = String(findColumn(row, 'Trade Status') || '').toLowerCase().trim();
                 let catKey = 'Others';
                 if (rawCat.includes('onion')) catKey = 'Onion';
                 else if (rawCat.includes('garlic')) catKey = 'Garlic';
                 else if (rawCat.includes('ginger')) catKey = 'Ginger';
-
                 let typeKey = rawMode.includes('commission') ? 'Comm..' : 'Order';
                 const key = `${catKey}_${typeKey}`;
-
                 if (matrix.executed.hasOwnProperty(key)) {
                     matrix.executed[key]++;
-                    if (String(findColumn(row, 'Trade Status') || '').toLowerCase().trim() === 'closed') {
+                    if (status === 'closed') {
                         matrix.closed[key]++;
                         matrix.gmv[key] += cleanNumber(findColumn(row, 'Sale value( Contract/GMV)'));
                         matrix.margin[key] += cleanNumber(findColumn(row, 'Trade Margin'));
                     }
                 }
             });
-
-            const rows = [
-                { label: 'Executed', d: matrix.executed, f: 'int' },
-                { label: 'Closed', d: matrix.closed, f: 'int' },
-                { label: 'GMV', d: matrix.gmv, f: 'curr' },
-                { label: 'Margin', d: matrix.margin, f: 'curr', hl: true },
-                { label: 'Margin %', isP: true, hl: true }
-            ];
-
+            const rows = [{ label: 'Executed Trades', d: matrix.executed, f: 'int' }, { label: 'Closed Trades', d: matrix.closed, f: 'int' }, { label: 'GMV', d: matrix.gmv, f: 'curr' }, { label: 'Margin', d: matrix.margin, f: 'curr', hl: true }, { label: 'Margin %', isP: true, hl: true }];
             document.getElementById('matrix-body').innerHTML = rows.map(r => {
-                let html = `<tr><td class="text-left font-black text-[9px] text-slate-400 uppercase tracking-widest px-6 py-4">${r.label}</td>`;
+                let html = `<tr><td class="text-left font-black text-[10px] text-slate-400 uppercase tracking-widest px-6 py-5 border-none">${r.label}</td>`;
                 let rowTotal = 0;
                 CATEGORIES.forEach(c => TYPES.forEach(t => {
                     const k = `${c}_${t}`;
-                    let val = r.isP ? (matrix.gmv[k] > 0 ? (matrix.margin[k] / matrix.gmv[k] * 100).toFixed(2) + '%' : '0.00%') : (r.f === 'curr' ? '₹' + Math.round(r.d[k]).toLocaleString() : r.d[k]);
+                    let val = r.isP ? (matrix.gmv[k] > 0 ? (matrix.margin[k] / matrix.gmv[k] * 100).toFixed(2) + '%' : '0.00%') : (r.f === 'curr' ? '₹' + Math.round(r.d[k]).toLocaleString() : r.d[k].toLocaleString());
                     if (!r.isP) rowTotal += r.d[k];
-                    html += `<td class="font-bold ${r.hl ? 'text-emerald-600' : 'text-slate-700'}">${val}</td>`;
+                    html += `<td class="border-none font-bold ${r.hl ? 'highlight-green' : (t === 'Order' ? 'text-slate-800' : 'text-slate-400')}">${val}</td>`;
                 }));
-                let fTotal = r.isP ? (Object.values(matrix.gmv).reduce((a, b) => a + b, 0) > 0 ? (Object.values(matrix.margin).reduce((a, b) => a + b, 0) / Object.values(matrix.gmv).reduce((a, b) => a + b, 0) * 100).toFixed(2) + '%' : '0.00%') : (r.f === 'curr' ? '₹' + Math.round(rowTotal).toLocaleString() : rowTotal);
-                return html + `<td class="bg-slate-50 text-center font-black ${r.hl ? 'text-emerald-600' : 'text-slate-900'}">${fTotal}</td></tr>`;
+                return html + `<td class="total-col border-none text-center font-black">${r.isP ? '' : (r.f === 'curr' ? '₹' + Math.round(rowTotal).toLocaleString() : rowTotal.toLocaleString())}</td></tr>`;
             }).join('');
             document.getElementById('matrix-container').classList.remove('hidden');
         }
@@ -573,49 +789,141 @@
 
                 if (catData.length === 0) return;
 
-                const zones = {};
-                catData.forEach(row => {
-                    const owner = String(findColumn(row, 'Supply Owner') || 'Direct').trim();
-                    const zone = REGION_MAP[owner] || owner;
-                    if (!zones[zone]) zones[zone] = { executed: 0, closed: 0, gmv: 0, margin: 0, rawOwner: owner };
-                    zones[zone].executed++;
-                    if (String(findColumn(row, 'Trade Status') || '').toLowerCase().trim() === 'closed') {
-                        zones[zone].closed++;
-                        zones[zone].gmv += cleanNumber(findColumn(row, 'Sale value( Contract/GMV)'));
-                        zones[zone].margin += cleanNumber(findColumn(row, 'Trade Margin'));
-                    }
+                const owners = [...new Set(catData.map(row => String(findColumn(row, 'Supply Owner')).trim()))].filter(Boolean);
+                const grandTotal = { executed: 0, closed: 0, gmv: 0, margin: 0 };
+
+                let rowsHtml = '';
+                owners.forEach(owner => {
+                    const ownerData = catData.filter(row => String(findColumn(row, 'Supply Owner')).trim() === owner);
+                    const stats = { executed: ownerData.length, closed: 0, gmv: 0, margin: 0 };
+
+                    ownerData.forEach(row => {
+                        if (String(findColumn(row, 'Trade Status') || '').toLowerCase().trim() === 'closed') {
+                            stats.closed++;
+                            stats.gmv += cleanNumber(findColumn(row, 'Sale value( Contract/GMV)'));
+                            stats.margin += cleanNumber(findColumn(row, 'Trade Margin'));
+                        }
+                    });
+
+                    grandTotal.executed += stats.executed;
+                    grandTotal.closed += stats.closed;
+                    grandTotal.gmv += stats.gmv;
+                    grandTotal.margin += stats.margin;
+
+                    const displayName = REGION_MAP[owner] || owner;
+                    rowsHtml += `
+                        <tr class="drill-down-row" onclick="showCategoryZoneDetails('${owner}', '${displayName}', '${cat}')">
+                            <td class="text-left px-8 py-4 font-bold text-slate-700 border-none flex items-center gap-3">
+                                <div class="w-1 h-1 rounded-full bg-blue-500"></div>
+                                ${displayName}
+                            </td>
+                            <td class="border-none font-medium">${stats.executed.toLocaleString()}</td>
+                            <td class="border-none font-medium">${stats.closed.toLocaleString()}</td>
+                            <td class="border-none font-medium">₹${Math.round(stats.gmv).toLocaleString()}</td>
+                            <td class="border-none font-medium text-emerald-600">₹${Math.round(stats.margin).toLocaleString()}</td>
+                            <td class="border-none font-black text-slate-800">${(stats.gmv > 0 ? (stats.margin / stats.gmv * 100).toFixed(2) : '0.00')}%</td>
+                        </tr>`;
                 });
 
                 const html = `
                     <div class="zonal-card">
-                        <div class="bg-slate-900 text-white py-4 px-8 flex justify-between items-center">
-                            <h3 class="font-black text-[10px] uppercase tracking-widest">${cat} Territory Breakdown</h3>
-                            <span class="text-[9px] font-bold text-slate-400">Total GMV: ₹${Math.round(Object.values(zones).reduce((a, b) => a + b.gmv, 0)).toLocaleString()}</span>
+                        <div class="bg-slate-900 text-white py-5 px-8 flex justify-between items-center">
+                            <h3 class="font-black text-xs uppercase tracking-[0.2em]">${cat} Territory Breakdown</h3>
                         </div>
                         <div class="overflow-x-auto p-4">
                             <table class="w-full summary-table">
                                 <thead>
-                                    <tr class="text-[9px] uppercase tracking-widest text-slate-400">
-                                        <th class="text-left px-8 py-3">Zone / Owner</th>
-                                        <th>Executed</th><th>Closed</th><th>GMV</th><th>Margin</th><th>Margin %</th>
+                                    <tr class="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-400">
+                                        <th class="text-left px-8 py-4 border-none">Zone / Owner</th>
+                                        <th class="border-none">Executed</th>
+                                        <th class="border-none">Closed</th>
+                                        <th class="border-none">GMV</th>
+                                        <th class="border-none">Margin</th>
+                                        <th class="border-none">MMU</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${Object.entries(zones).map(([name, m]) => `
-                                        <tr class="drill-down-row" onclick="showCategoryZoneDetails('${m.rawOwner}', '${name}', '${cat}')">
-                                            <td class="text-left px-8 py-4 font-black text-blue-600 text-xs">${name}</td>
-                                            <td class="font-bold text-slate-700">${m.executed}</td>
-                                            <td class="font-bold text-slate-700">${m.closed}</td>
-                                            <td class="font-bold text-slate-700">₹${Math.round(m.gmv).toLocaleString()}</td>
-                                            <td class="font-bold text-emerald-600">₹${Math.round(m.margin).toLocaleString()}</td>
-                                            <td class="font-black text-emerald-600">${(m.gmv > 0 ? (m.margin / m.gmv * 100).toFixed(2) : '0.00')}%</td>
-                                        </tr>
-                                    `).join('')}
+                                    ${rowsHtml}
+                                    <tr class="bg-slate-50/50 border-t-2 border-slate-100">
+                                        <td class="text-left px-8 py-5 font-black text-slate-900 text-xs border-none">GRAND TOTAL</td>
+                                        <td class="border-none font-black">${grandTotal.executed.toLocaleString()}</td>
+                                        <td class="border-none font-black">${grandTotal.closed.toLocaleString()}</td>
+                                        <td class="border-none font-black">₹${Math.round(grandTotal.gmv).toLocaleString()}</td>
+                                        <td class="border-none font-black highlight-green">₹${Math.round(grandTotal.margin).toLocaleString()}</td>
+                                        <td class="border-none font-black text-emerald-600">${(grandTotal.gmv > 0 ? (grandTotal.margin / grandTotal.gmv * 100).toFixed(2) : '0.00')}%</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                `;
+                    </div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        function renderRiskView(data) {
+            const today = new Date();
+            const riskTrades = data.filter(row => {
+                const status = String(findColumn(row, 'Trade Status') || '').toLowerCase().trim();
+                if (status !== 'open') return false;
+                const contractStr = findColumn(row, 'contractDate');
+                if (!contractStr) return false;
+                const contractDate = new Date(contractStr);
+                if (isNaN(contractDate)) return false;
+                const diffTime = Math.abs(today - contractDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                row.__agingDays = diffDays;
+                return diffDays > 7;
+            });
+
+            const container = document.getElementById('risk-category-tables');
+            const mainContainer = document.getElementById('risk-view-container');
+            document.getElementById('risk-trade-count').textContent = riskTrades.length;
+
+            if (riskTrades.length === 0) { mainContainer.classList.add('hidden'); return; }
+            mainContainer.classList.remove('hidden');
+            container.innerHTML = '';
+
+            const grouped = {};
+            riskTrades.forEach(row => {
+                const skuCat = String(findColumn(row, 'Sku Category') || 'Others').trim();
+                if (!grouped[skuCat]) grouped[skuCat] = [];
+                grouped[skuCat].push(row);
+            });
+
+            Object.entries(grouped).forEach(([catName, trades]) => {
+                const html = `
+                    <div class="glass-card !p-0 overflow-hidden border-2 border-red-50">
+                        <div class="bg-red-50/50 px-6 py-4 border-b border-red-100 flex justify-between items-center">
+                            <h4 class="font-black uppercase tracking-widest text-[11px] text-red-700">${catName} Aging Risks</h4>
+                            <span class="text-[10px] font-bold text-red-500">${trades.length} Impacted Trades</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full risk-table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">Supply Owner</th>
+                                        <th class="text-left">Contract Date</th>
+                                        <th class="text-left">Buyer</th>
+                                        <th class="text-left">Supplier</th>
+                                        <th class="text-right">GMV Potential</th>
+                                        <th class="text-center">Aging</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${trades.map(t => `
+                                    <tr>
+                                        <td class="font-bold text-slate-900">${findColumn(t, 'Supply Owner') || '-'}</td>
+                                        <td class="text-slate-500 font-medium">${findColumn(t, 'contractDate') || '-'}</td>
+                                        <td class="font-black text-slate-800">${findColumn(t, 'Buyer Name') || '-'}</td>
+                                        <td class="text-slate-600 font-medium">${findColumn(t, 'sellerName') || '-'}</td>
+                                        <td class="text-right font-black text-slate-600">₹${Math.round(cleanNumber(findColumn(t, 'Sale value( Contract/GMV)'))).toLocaleString()}</td>
+                                        <td class="text-center">
+                                            <span class="aging-badge bg-red-100 text-red-700">${t.__agingDays}d Delay</span>
+                                        </td>
+                                    </tr>`).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>`;
                 container.insertAdjacentHTML('beforeend', html);
             });
         }
@@ -627,24 +935,13 @@
                 const matchesCat = cat === 'Others' ? (!sku.includes('onion') && !sku.includes('garlic') && !sku.includes('ginger')) : sku.includes(cat.toLowerCase());
                 return String(findColumn(r, 'GMV Month')) === month && String(findColumn(r, 'Supply Owner')).trim() === ownerId && matchesCat;
             });
-
             document.getElementById('detail-zone-name').textContent = displayName;
             document.getElementById('trade-detail-body').innerHTML = zoneData.map(row => {
                 const gmv = cleanNumber(findColumn(row, 'Sale value( Contract/GMV)'));
                 const margin = cleanNumber(findColumn(row, 'Trade Margin'));
                 const status = String(findColumn(row, 'Trade Status') || '-').toUpperCase();
-                return `<tr class="border-b border-slate-50">
-                    <td class="py-4 text-slate-500">${findColumn(row, 'contractDate') || '-'}</td>
-                    <td class="font-bold text-slate-900">${findColumn(row, 'Buyer Name') || '-'}</td>
-                    <td>${findColumn(row, 'sellerName') || '-'}</td>
-                    <td class="text-right">₹${Math.round(cleanNumber(findColumn(row, 'Purchase value'))).toLocaleString()}</td>
-                    <td class="text-right font-bold">₹${Math.round(gmv).toLocaleString()}</td>
-                    <td class="text-right font-bold text-emerald-600">₹${Math.round(margin).toLocaleString()}</td>
-                    <td class="text-right font-black text-emerald-600">${(gmv > 0 ? (margin / gmv * 100).toFixed(2) : '0.00')}%</td>
-                    <td class="text-center"><span class="px-2 py-0.5 rounded text-[8px] font-black ${status === 'CLOSED' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}">${status}</span></td>
-                </tr>`;
+                return `<tr><td class="text-left text-[10px]">${findColumn(row, 'contractDate') || '-'}</td><td class="text-left font-bold text-slate-900">${findColumn(row, 'Buyer Name') || '-'}</td><td class="text-left truncate max-w-[120px]">${findColumn(row, 'sellerName') || '-'}</td><td class="text-right">₹${Math.round(cleanNumber(findColumn(row, 'Purchase value'))).toLocaleString()}</td><td class="text-right font-black">₹${Math.round(gmv).toLocaleString()}</td><td class="text-right font-medium text-orange-600">₹${Math.round(cleanNumber(findColumn(row, 'Seller Payable(1% - not for all cases)'))).toLocaleString()}</td><td class="text-right font-black highlight-green">₹${Math.round(margin).toLocaleString()}</td><td class="text-right font-black text-emerald-600">${(gmv > 0 ? (margin / gmv * 100).toFixed(2) : '0.00')}%</td><td class="text-center"><span class="px-2 py-0.5 rounded text-[8px] font-black ${status === 'CLOSED' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}">${status}</span></td></tr>`;
             }).join('');
-
             const container = document.getElementById('trade-detail-container');
             container.classList.remove('hidden');
             setTimeout(() => { container.style.transform = 'translateY(0)'; }, 10);
@@ -667,4 +964,3 @@
 </body>
 
 </html>
-
