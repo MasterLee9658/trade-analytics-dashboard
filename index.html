@@ -219,6 +219,15 @@
                     <select id="main-month-filter"
                         class="bg-transparent border-none text-slate-900 font-extrabold text-sm focus:ring-0 cursor-pointer outline-none"></select>
                 </div>
+                <!-- Refresh Button -->
+                <button onclick="init()" title="Refresh Data"
+                    class="bg-white p-2.5 rounded-full shadow-sm border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-200 hover:shadow-md transition-all active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+                        stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                </button>
             </div>
         </div>
 
@@ -545,7 +554,13 @@
             return parseFloat(String(val).replace(/[^\d.-]/g, '')) || 0;
         }
 
+        // Bind event listener once outside init
+        document.getElementById('main-month-filter').addEventListener('change', updateView);
+
         async function init() {
+            const refreshIcon = document.querySelector('button[title="Refresh Data"] svg');
+            if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
             Papa.parse(CSV_URL, {
                 download: true, header: true, dynamicTyping: true, skipEmptyLines: true,
                 complete: function (results) {
@@ -555,18 +570,25 @@
                         months.sort((a, b) => new Date('01-' + a) - new Date('01-' + b));
 
                         const mainSelect = document.getElementById('main-month-filter');
+                        const currentVal = mainSelect.value;
+
                         mainSelect.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
 
-                        const now = new Date();
-                        const currentMonthFormatted = now.toLocaleString('en-US', { month: 'short' }) + '-' + now.getFullYear();
-                        if (months.includes(currentMonthFormatted)) mainSelect.value = currentMonthFormatted;
-                        else mainSelect.value = months[months.length - 1];
+                        if (currentVal && months.includes(currentVal)) {
+                            mainSelect.value = currentVal;
+                        } else {
+                            const now = new Date();
+                            const currentMonthFormatted = now.toLocaleString('en-US', { month: 'short' }) + '-' + now.getFullYear();
+                            if (months.includes(currentMonthFormatted)) mainSelect.value = currentMonthFormatted;
+                            else mainSelect.value = months[months.length - 1];
+                        }
 
                         updateView();
                     } else showError("No data found.");
+
+                    if (refreshIcon) refreshIcon.classList.remove('animate-spin');
                 }
             });
-            document.getElementById('main-month-filter').addEventListener('change', updateView);
         }
 
         function updateView() {
