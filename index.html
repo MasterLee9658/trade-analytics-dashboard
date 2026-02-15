@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Non-Perishables Commerce Dashboard</title>
+    <title>Non-Perishables Multi-Sheet Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
@@ -14,35 +14,6 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #f8fafc;
             color: #1e293b;
-        }
-
-        /* PASSWORD PROTECTION STYLES */
-        #login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-
-        .login-box {
-            background: white;
-            padding: 2rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 300px;
-            border: 1px solid #e2e8f0;
-        }
-
-        #dashboard-content {
-            display: none;
         }
 
         .summary-table th {
@@ -188,7 +159,6 @@
             text-align: center;
         }
 
-        /* Risk View Styles */
         .risk-view-section {
             border-top: 2px dashed #fee2e2;
             padding-top: 3rem;
@@ -218,53 +188,177 @@
             font-size: 10px;
             display: inline-block;
         }
+
+        /* Password Protection Modal */
+        .password-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .password-box {
+            background: white;
+            padding: 3rem 2.5rem;
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 400px;
+            width: 90%;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 1rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .password-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .password-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 1rem;
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .password-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
+        }
+
+        .password-error {
+            color: #ef4444;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        /* Refresh Button */
+        .refresh-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 1rem;
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px -3px rgba(16, 185, 129, 0.3);
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -5px rgba(16, 185, 129, 0.5);
+        }
+
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
+
+        .refresh-icon {
+            width: 16px;
+            height: 16px;
+            animation: none;
+        }
+
+        .refresh-btn.loading .refresh-icon {
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 
 <body class="min-h-screen">
-
-    <!-- LOGIN OVERLAY START -->
-    <div id="login-overlay">
-        <div class="login-box">
-            <h2 class="text-xl font-black text-slate-800 mb-4">Secured Access</h2>
-            <input type="password" id="password-input" placeholder="Enter Password"
-                class="w-full p-3 border rounded-lg mb-4 text-center font-bold focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button onclick="checkPassword()"
-                class="w-full bg-slate-900 text-white font-bold py-3 rounded-lg hover:bg-slate-800 transition">Unlock</button>
-            <p id="login-error" class="text-red-500 text-xs mt-3 hidden font-bold">Incorrect Password</p>
+    <!-- Password Protection Modal -->
+    <div id="password-overlay" class="password-overlay">
+        <div class="password-box">
+            <div class="text-center mb-6">
+                <div class="inline-block bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-2xl mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-black text-slate-900 mb-2">Secured Access</h2>
+                <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Enter Password to Continue</p>
+            </div>
+            <input type="password" id="password-input" class="password-input" placeholder="Enter password"
+                autocomplete="off" />
+            <p id="password-error" class="password-error">Incorrect password. Please try again.</p>
+            <button onclick="checkPassword()" class="password-btn">Unlock Dashboard</button>
         </div>
     </div>
-    <!-- LOGIN OVERLAY END -->
 
-    <div id="dashboard-content" class="max-w-7xl mx-auto px-4 py-8">
+    <div class="max-w-7xl mx-auto px-4 py-8">
         <!-- Header Controls -->
-        <div class="relative flex flex-col md:flex-row justify-between items-end md:items-center gap-6 mb-10">
-            <div class="space-y-1 z-10">
+        <div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
+            <div class="space-y-1">
                 <h1 class="text-4xl font-black text-slate-900 tracking-tight">Non-Perishables Commerce</h1>
                 <p id="view-subtitle" class="text-[10px] text-blue-600 font-bold uppercase tracking-[0.3em]">Business
-                    Intelligence Ledger</p>
+                    Intelligence Dashboard</p>
             </div>
-            <div class="flex items-center gap-4 z-10">
+
+            <div class="flex items-center gap-4">
+                <button onclick="refreshData()" id="refresh-btn" class="refresh-btn">
+                    <svg class="refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                </button>
                 <div class="bg-white p-2 px-5 rounded-full shadow-sm border border-slate-200 flex items-center gap-4">
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Select Month</span>
                     <select id="main-month-filter"
                         class="bg-transparent border-none text-slate-900 font-extrabold text-sm focus:ring-0 cursor-pointer outline-none"></select>
                 </div>
-                <!-- Refresh Button -->
-                <button onclick="init()" title="Refresh Data"
-                    class="bg-white p-2.5 rounded-full shadow-sm border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-200 hover:shadow-md transition-all active:scale-95">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
-                        stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                    </svg>
-                </button>
             </div>
         </div>
 
         <!-- Metric Grid -->
         <div id="top-metrics-row" class="hidden mb-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-11 gap-4">
                 <div class="glass-card">
                     <p class="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-2">Executed</p>
                     <h3 id="stat-executed" class="text-2xl font-black text-slate-800">0</h3>
@@ -272,6 +366,12 @@
                 <div class="glass-card">
                     <p class="text-emerald-600 text-[10px] uppercase font-black tracking-widest mb-2">Closed</p>
                     <h3 id="stat-closed" class="text-2xl font-black text-emerald-600">0</h3>
+                </div>
+
+                <!-- Confirmed Orders Gird -->
+                <div class="glass-card border-2 border-blue-500 bg-blue-50/20">
+                    <p class="text-blue-600 text-[10px] uppercase font-black tracking-widest mb-2">Confirmed Orders</p>
+                    <h3 id="stat-confirmed" class="text-3xl font-black text-blue-700">0</h3>
                 </div>
 
                 <div class="glass-card xl:col-span-2">
@@ -295,7 +395,7 @@
                     <p class="text-purple-600 text-[10px] uppercase font-black tracking-widest mb-2">Sellers</p>
                     <h3 id="stat-sellers" class="text-2xl font-black text-purple-600">0</h3>
                 </div>
-                <div class="glass-card bg-slate-900 text-white border-none">
+                <div class="glass-card bg-slate-100 text-slate-900 border-none">
                     <p class="text-slate-400 text-[9px] uppercase font-black tracking-widest mb-1">Closed GMV</p>
                     <h3 id="stat-gmv" class="text-xl font-black">₹0</h3>
                 </div>
@@ -304,7 +404,7 @@
                     <h3 id="stat-margin" class="text-xl font-black">₹0</h3>
                 </div>
                 <div class="glass-card bg-orange-600 text-white border-none xl:col-span-2">
-                    <p class="text-orange-100 text-[9px] uppercase font-black tracking-widest mb-1">Potential Additional
+                    <p class="text-orange-100 text-[9px] uppercase font-black tracking-widest mb-1">Potential Add.
                         Margin</p>
                     <h3 id="stat-potential" class="text-xl font-black">₹0</h3>
                 </div>
@@ -352,126 +452,7 @@
         <!-- Category MMU -->
         <div id="category-mmu-row" class="hidden mb-12 space-y-8">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Onion -->
-                <div class="cat-group">
-                    <h3 class="px-2 text-[11px] font-black text-orange-600 uppercase tracking-[0.2em]">Onion Category
-                    </h3>
-                    <div class="split-box">
-                        <div class="mmu-box glass-card border-l-4 border-l-orange-400 !p-5">
-                            <div class="grid grid-cols-3 gap-3">
-                                <div class="pill-stat bg-slate-50">
-                                    <p class="text-[7px] font-bold text-slate-400 uppercase mb-1">Act</p>
-                                    <p id="mmu-total-onion" class="text-sm font-black text-slate-800">0</p>
-                                </div>
-                                <div class="pill-stat bg-amber-50">
-                                    <p class="text-[7px] font-bold text-amber-500 uppercase mb-1">FTA</p>
-                                    <p id="mmu-fta-onion" class="text-sm font-black text-amber-700">0</p>
-                                </div>
-                                <div class="pill-stat bg-indigo-50">
-                                    <p class="text-[7px] font-bold text-indigo-500 uppercase mb-1">Ret</p>
-                                    <p id="mmu-ret-onion" class="text-sm font-black text-indigo-700">0</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div
-                            class="margin-box glass-card border-l-4 border-l-emerald-400 !p-5 text-center flex flex-col justify-center">
-                            <p id="mmu-perc-onion" class="text-xl font-black text-emerald-600">0%</p>
-                            <div class="mt-2 progress-bar h-1.5">
-                                <div id="mmu-bar-onion" class="progress-fill bg-emerald-500" style="width:0%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Garlic -->
-                <div class="cat-group">
-                    <h3 class="px-2 text-[11px] font-black text-blue-600 uppercase tracking-[0.2em]">Garlic Category
-                    </h3>
-                    <div class="split-box">
-                        <div class="mmu-box glass-card border-l-4 border-l-blue-400 !p-5">
-                            <div class="grid grid-cols-3 gap-3">
-                                <div class="pill-stat bg-slate-50">
-                                    <p class="text-[7px] font-bold text-slate-400 uppercase mb-1">Act</p>
-                                    <p id="mmu-total-garlic" class="text-sm font-black text-slate-800">0</p>
-                                </div>
-                                <div class="pill-stat bg-amber-50">
-                                    <p class="text-[7px] font-bold text-amber-500 uppercase mb-1">FTA</p>
-                                    <p id="mmu-fta-garlic" class="text-sm font-black text-amber-700">0</p>
-                                </div>
-                                <div class="pill-stat bg-indigo-50">
-                                    <p class="text-[7px] font-bold text-indigo-500 uppercase mb-1">Ret</p>
-                                    <p id="mmu-ret-garlic" class="text-sm font-black text-indigo-700">0</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div
-                            class="margin-box glass-card border-l-4 border-l-emerald-400 !p-5 text-center flex flex-col justify-center">
-                            <p id="mmu-perc-garlic" class="text-xl font-black text-emerald-600">0%</p>
-                            <div class="mt-2 progress-bar h-1.5">
-                                <div id="mmu-bar-garlic" class="progress-fill bg-emerald-500" style="width:0%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Ginger -->
-                <div class="cat-group">
-                    <h3 class="px-2 text-[11px] font-black text-purple-600 uppercase tracking-[0.2em]">Ginger Category
-                    </h3>
-                    <div class="split-box">
-                        <div class="mmu-box glass-card border-l-4 border-l-purple-400 !p-5">
-                            <div class="grid grid-cols-3 gap-3">
-                                <div class="pill-stat bg-slate-50">
-                                    <p class="text-[7px] font-bold text-slate-400 uppercase mb-1">Act</p>
-                                    <p id="mmu-total-ginger" class="text-sm font-black text-slate-800">0</p>
-                                </div>
-                                <div class="pill-stat bg-amber-50">
-                                    <p class="text-[7px] font-bold text-amber-500 uppercase mb-1">FTA</p>
-                                    <p id="mmu-fta-ginger" class="text-sm font-black text-amber-700">0</p>
-                                </div>
-                                <div class="pill-stat bg-indigo-50">
-                                    <p class="text-[7px] font-bold text-indigo-500 uppercase mb-1">Ret</p>
-                                    <p id="mmu-ret-ginger" class="text-sm font-black text-indigo-700">0</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div
-                            class="margin-box glass-card border-l-4 border-l-emerald-400 !p-5 text-center flex flex-col justify-center">
-                            <p id="mmu-perc-ginger" class="text-xl font-black text-emerald-600">0%</p>
-                            <div class="mt-2 progress-bar h-1.5">
-                                <div id="mmu-bar-ginger" class="progress-fill bg-emerald-500" style="width:0%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Others -->
-                <div class="cat-group">
-                    <h3 class="px-2 text-[11px] font-black text-slate-600 uppercase tracking-[0.2em]">Others Category
-                    </h3>
-                    <div class="split-box">
-                        <div class="mmu-box glass-card border-l-4 border-l-slate-400 !p-5">
-                            <div class="grid grid-cols-3 gap-3">
-                                <div class="pill-stat bg-slate-50">
-                                    <p class="text-[7px] font-bold text-slate-400 uppercase mb-1">Act</p>
-                                    <p id="mmu-total-others" class="text-sm font-black text-slate-800">0</p>
-                                </div>
-                                <div class="pill-stat bg-amber-50">
-                                    <p class="text-[7px] font-bold text-amber-500 uppercase mb-1">FTA</p>
-                                    <p id="mmu-fta-others" class="text-sm font-black text-amber-700">0</p>
-                                </div>
-                                <div class="pill-stat bg-indigo-50">
-                                    <p class="text-[7px] font-bold text-indigo-500 uppercase mb-1">Ret</p>
-                                    <p id="mmu-ret-others" class="text-sm font-black text-indigo-700">0</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div
-                            class="margin-box glass-card border-l-4 border-l-emerald-400 !p-5 text-center flex flex-col justify-center">
-                            <p id="mmu-perc-others" class="text-xl font-black text-emerald-600">0%</p>
-                            <div class="mt-2 progress-bar h-1.5">
-                                <div id="mmu-bar-others" class="progress-fill bg-emerald-500" style="width:0%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <div id="mmu-grid-container" class="contents"></div>
             </div>
         </div>
 
@@ -584,7 +565,74 @@
     </div>
 
     <script>
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRyVz_AMFqUPAk7w8-jSo1c0u1E8J-NGAecbFB17ZwZtnXbc2MC4QUqVehkOQBVSwKSRnShOsIna5rl/pub?output=csv';
+        // Password Protection Configuration
+        const DASHBOARD_PASSWORD = 'ninjacart2026'; // Change this to your desired password
+
+        function checkPassword() {
+            const input = document.getElementById('password-input');
+            const error = document.getElementById('password-error');
+            const overlay = document.getElementById('password-overlay');
+
+            if (input.value === DASHBOARD_PASSWORD) {
+                overlay.style.opacity = '0';
+                overlay.style.transition = 'opacity 0.3s ease-out';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    init(); // Initialize dashboard after successful login
+                }, 300);
+                error.style.display = 'none';
+            } else {
+                error.style.display = 'block';
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        // Allow Enter key to submit password
+        document.addEventListener('DOMContentLoaded', () => {
+            const passwordInput = document.getElementById('password-input');
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        checkPassword();
+                    }
+                });
+                passwordInput.focus();
+            }
+        });
+
+        // Refresh Data Function
+        function refreshData() {
+            const btn = document.getElementById('refresh-btn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            // Clear existing data
+            rawData = [];
+
+            // Hide all sections
+            document.getElementById('top-metrics-row').classList.add('hidden');
+            document.getElementById('net-margin-row').classList.add('hidden');
+            document.getElementById('category-mmu-row').classList.add('hidden');
+            document.getElementById('matrix-container').classList.add('hidden');
+            document.getElementById('regional-views').innerHTML = '';
+            document.getElementById('risk-view-container').classList.add('hidden');
+
+            // Show loader
+            document.getElementById('initial-loader').classList.remove('hidden');
+
+            // Reload data
+            init().then(() => {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }).catch(() => {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            });
+        }
+
+        const CSV_URL_SHEET1 = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRyVz_AMFqUPAk7w8-jSo1c0u1E8J-NGAecbFB17ZwZtnXbc2MC4QUqVehkOQBVSwKSRnShOsIna5rl/pub?output=csv';
+
         let rawData = [];
         const CATEGORIES = ['Onion', 'Garlic', 'Ginger', 'Others'];
         const TYPES = ['Order', 'Comm..'];
@@ -606,97 +654,85 @@
         }
 
         async function init() {
-            const refreshIcon = document.querySelector('button[title="Refresh Data"] svg');
-            if (refreshIcon) refreshIcon.classList.add('animate-spin');
+            try {
+                const results1 = await fetchCSV(CSV_URL_SHEET1);
+                rawData = results1;
 
-            Papa.parse(CSV_URL, {
-                download: true, header: true, dynamicTyping: true, skipEmptyLines: true,
-                complete: function (results) {
-                    if (results.data && results.data.length > 0) {
-                        rawData = results.data;
-                        const months = [...new Set(rawData.map(row => findColumn(row, 'GMV Month')))].filter(Boolean);
-                        months.sort((a, b) => new Date('01-' + a) - new Date('01-' + b));
-                        const mainSelect = document.getElementById('main-month-filter');
-                        const currentVal = mainSelect.value;
-
-                        mainSelect.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
-
-                        if (currentVal && months.includes(currentVal)) {
-                            mainSelect.value = currentVal;
-                        } else {
-                            mainSelect.value = months[months.length - 1];
-                        }
-
-                        updateView();
-                    } else showError("No data found in the provided source.");
-
-                    if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+                if (rawData.length > 0) {
+                    const months = [...new Set(rawData.map(row => findColumn(row, 'GMV Month')))].filter(Boolean);
+                    months.sort((a, b) => new Date('01-' + a) - new Date('01-' + b));
+                    const mainSelect = document.getElementById('main-month-filter');
+                    mainSelect.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
+                    mainSelect.value = months[months.length - 1];
+                    updateView();
+                    mainSelect.addEventListener('change', updateView);
+                } else {
+                    showError("No data found.");
                 }
-            });
-        }
-
-        // Use 'change' listener only once
-        document.getElementById('main-month-filter').addEventListener('change', updateView);
-
-        // --- PASSWORD PROTECTION SCRIPT START ---
-        function checkPassword() {
-            const input = document.getElementById('password-input').value;
-            const error = document.getElementById('login-error');
-            const overlay = document.getElementById('login-overlay');
-            const content = document.getElementById('dashboard-content');
-
-            if (input === 'admin123') { // Simple client-side check
-                overlay.style.display = 'none';
-                content.style.display = 'block';
-                init(); // Start loading data only after login
-            } else {
-                error.classList.remove('hidden');
+            } catch (err) {
+                showError("Connection failed. Ensure Google Sheet is published to web as CSV.");
             }
         }
 
-        // Allow pressing Enter to submit password
-        document.getElementById('password-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') checkPassword();
-        });
-        // --- PASSWORD PROTECTION SCRIPT END ---
-
+        function fetchCSV(url) {
+            return new Promise((resolve, reject) => {
+                Papa.parse(url, {
+                    download: true, header: true, dynamicTyping: true, skipEmptyLines: true,
+                    complete: (results) => resolve(results.data || []),
+                    error: (err) => reject(err)
+                });
+            });
+        }
 
         function updateView() {
             const selectedMonth = document.getElementById('main-month-filter').value;
+
             const monthData = rawData.filter(row => String(findColumn(row, 'GMV Month')) === selectedMonth);
             const closedData = monthData.filter(row => String(findColumn(row, 'Trade Status') || '').toLowerCase().trim() === 'closed');
 
+            // Logic for Confirmed Orders from formula criteria
+            const confirmedGridData = rawData.filter(row => {
+                const bjMonth = String(findColumn(row, 'Formula2') || '');
+                const blStatus = String(findColumn(row, 'Status 2') || '').toLowerCase().trim();
+                return bjMonth === selectedMonth && blStatus === 'confirmed';
+            });
+
+            // Standard Metrics
             const totalExecuted = monthData.length;
             const totalClosed = closedData.length;
+
             const gmv = closedData.reduce((sum, row) => sum + cleanNumber(findColumn(row, 'Sale value( Contract/GMV)')), 0);
             const margin = closedData.reduce((sum, row) => sum + cleanNumber(findColumn(row, 'Trade Margin')), 0);
 
             const getBuyerId = (row) => findColumn(row, 'buyer_id') || findColumn(row, 'Buyer Name');
-            const activeBuyers = [...new Set(closedData.map(getBuyerId))].filter(Boolean);
-            const ftaBuyers = [...new Set(closedData.filter(row => String(findColumn(row, 'FTA Check') || '').toLowerCase().trim() === 'yes').map(getBuyerId))].filter(Boolean);
+
+            const activeBuyersUnique = [...new Set(closedData.map(getBuyerId))].filter(Boolean);
+            const ftaBuyersUnique = [...new Set(closedData.filter(row => String(findColumn(row, 'FTA Check') || '').toLowerCase().trim() === 'yes').map(getBuyerId))].filter(Boolean);
 
             const avgGmvPerTrade = totalClosed > 0 ? (gmv / totalClosed) : 0;
             const netMarginPerc = gmv > 0 ? (margin / gmv) : 0;
             const potentialMargin = (totalExecuted - totalClosed) * avgGmvPerTrade * netMarginPerc;
 
+            // UI Updates
             document.getElementById('stat-executed').textContent = totalExecuted.toLocaleString();
             document.getElementById('stat-closed').textContent = totalClosed.toLocaleString();
-            document.getElementById('stat-buyers-total').textContent = activeBuyers.length.toLocaleString();
-            document.getElementById('stat-buyers-fta').textContent = ftaBuyers.length.toLocaleString();
-            document.getElementById('stat-buyers-ret').textContent = (activeBuyers.length - ftaBuyers.length).toLocaleString();
+            document.getElementById('stat-confirmed').textContent = confirmedGridData.length.toLocaleString();
+            document.getElementById('stat-buyers-total').textContent = activeBuyersUnique.length.toLocaleString();
+            document.getElementById('stat-buyers-fta').textContent = ftaBuyersUnique.length.toLocaleString();
+            document.getElementById('stat-buyers-ret').textContent = (activeBuyersUnique.length - ftaBuyersUnique.length).toLocaleString();
+
             document.getElementById('stat-sellers').textContent = [...new Set(closedData.map(row => findColumn(row, 'sellerName')))].filter(Boolean).length;
             document.getElementById('stat-gmv').textContent = '₹' + Math.round(gmv).toLocaleString();
             document.getElementById('stat-margin').textContent = '₹' + Math.round(margin).toLocaleString();
             document.getElementById('stat-potential').textContent = '₹' + Math.round(potentialMargin).toLocaleString();
             document.getElementById('stat-avg-gmv-trade').textContent = '₹' + Math.round(avgGmvPerTrade).toLocaleString();
 
-            const marginPercVal = netMarginPerc;
-            document.getElementById('net-margin-perc-display').textContent = (marginPercVal * 100).toFixed(2) + '%';
+            document.getElementById('net-margin-perc-display').textContent = (netMarginPerc * 100).toFixed(2) + '%';
             document.getElementById('net-avg-margin').textContent = '₹' + Math.round(totalClosed > 0 ? margin / totalClosed : 0).toLocaleString();
-            document.getElementById('net-margin-progress').style.width = Math.min(marginPercVal * 100 * 10, 100) + '%';
+            document.getElementById('net-margin-progress').style.width = Math.min(netMarginPerc * 100 * 10, 100) + '%';
 
-            renderNPMatrix(monthData);
             renderCategoryMMU(monthData);
+            renderNPMatrix(monthData);
             renderRegionalPerformance(monthData);
             renderRiskView(monthData);
 
@@ -707,6 +743,8 @@
         }
 
         function renderCategoryMMU(monthData) {
+            const container = document.getElementById('mmu-grid-container');
+            container.innerHTML = '';
             CATEGORIES.forEach(cat => {
                 const catClosed = monthData.filter(row => {
                     const sku = String(findColumn(row, 'Sku Category') || '').toLowerCase();
@@ -718,14 +756,25 @@
                 const getBuyerId = (row) => findColumn(row, 'buyer_id') || findColumn(row, 'Buyer Name');
                 const cBuyers = [...new Set(catClosed.map(getBuyerId))].filter(Boolean);
                 const cFta = [...new Set(catClosed.filter(r => String(findColumn(r, 'FTA Check') || '').toLowerCase().trim() === 'yes').map(getBuyerId))].length;
-                const slug = cat.toLowerCase();
-                if (document.getElementById(`mmu-perc-${slug}`)) {
-                    document.getElementById(`mmu-perc-${slug}`).textContent = (cGmv > 0 ? (cMargin / cGmv * 100).toFixed(2) : '0.00') + '%';
-                    document.getElementById(`mmu-bar-${slug}`).style.width = (cGmv > 0 ? Math.min((cMargin / cGmv * 1000), 100) : 0) + '%';
-                    document.getElementById(`mmu-total-${slug}`).textContent = cBuyers.length;
-                    document.getElementById(`mmu-fta-${slug}`).textContent = cFta;
-                    document.getElementById(`mmu-ret-${slug}`).textContent = cBuyers.length - cFta;
-                }
+                const perc = cGmv > 0 ? (cMargin / cGmv * 100).toFixed(2) : '0.00';
+                const color = cat === 'Onion' ? 'orange' : cat === 'Garlic' ? 'blue' : cat === 'Ginger' ? 'purple' : 'slate';
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="cat-group">
+                        <h3 class="px-2 text-[11px] font-black text-${color}-600 uppercase tracking-[0.2em]">${cat} Category</h3>
+                        <div class="split-box">
+                            <div class="mmu-box glass-card border-l-4 border-l-${color}-400 !p-5">
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div class="pill-stat bg-slate-50"><p class="text-[7px] font-bold text-slate-400 uppercase mb-1">Act</p><p class="text-sm font-black">${cBuyers.length}</p></div>
+                                    <div class="pill-stat bg-amber-50"><p class="text-[7px] font-bold text-amber-500 uppercase mb-1">FTA</p><p class="text-sm font-black">${cFta}</p></div>
+                                    <div class="pill-stat bg-indigo-50"><p class="text-[7px] font-bold text-indigo-500 uppercase mb-1">Ret</p><p class="text-sm font-black">${cBuyers.length - cFta}</p></div>
+                                </div>
+                            </div>
+                            <div class="margin-box glass-card border-l-4 border-l-emerald-400 !p-5 text-center flex flex-col justify-center">
+                                <p class="text-xl font-black text-emerald-600">${perc}%</p>
+                                <div class="mt-2 progress-bar h-1.5"><div class="progress-fill bg-emerald-500" style="width:${Math.min(parseFloat(perc) * 10, 100)}%"></div></div>
+                            </div>
+                        </div>
+                    </div>`);
             });
         }
 
@@ -772,83 +821,28 @@
         function renderRegionalPerformance(data) {
             const container = document.getElementById('regional-views');
             container.innerHTML = '';
-
             CATEGORIES.forEach(cat => {
                 const catData = data.filter(row => {
                     const sku = String(findColumn(row, 'Sku Category') || '').toLowerCase();
                     return cat === 'Others' ? (!sku.includes('onion') && !sku.includes('garlic') && !sku.includes('ginger')) : sku.includes(cat.toLowerCase());
                 });
-
                 if (catData.length === 0) return;
-
                 const owners = [...new Set(catData.map(row => String(findColumn(row, 'Supply Owner')).trim()))].filter(Boolean);
                 const grandTotal = { executed: 0, closed: 0, gmv: 0, margin: 0 };
-
                 let rowsHtml = '';
                 owners.forEach(owner => {
                     const ownerData = catData.filter(row => String(findColumn(row, 'Supply Owner')).trim() === owner);
                     const stats = { executed: ownerData.length, closed: 0, gmv: 0, margin: 0 };
-
                     ownerData.forEach(row => {
                         if (String(findColumn(row, 'Trade Status') || '').toLowerCase().trim() === 'closed') {
-                            stats.closed++;
-                            stats.gmv += cleanNumber(findColumn(row, 'Sale value( Contract/GMV)'));
-                            stats.margin += cleanNumber(findColumn(row, 'Trade Margin'));
+                            stats.closed++; stats.gmv += cleanNumber(findColumn(row, 'Sale value( Contract/GMV)')); stats.margin += cleanNumber(findColumn(row, 'Trade Margin'));
                         }
                     });
-
-                    grandTotal.executed += stats.executed;
-                    grandTotal.closed += stats.closed;
-                    grandTotal.gmv += stats.gmv;
-                    grandTotal.margin += stats.margin;
-
+                    grandTotal.executed += stats.executed; grandTotal.closed += stats.closed; grandTotal.gmv += stats.gmv; grandTotal.margin += stats.margin;
                     const displayName = REGION_MAP[owner] || owner;
-                    rowsHtml += `
-                        <tr class="drill-down-row" onclick="showCategoryZoneDetails('${owner}', '${displayName}', '${cat}')">
-                            <td class="text-left px-8 py-4 font-bold text-slate-700 border-none flex items-center gap-3">
-                                <div class="w-1 h-1 rounded-full bg-blue-500"></div>
-                                ${displayName}
-                            </td>
-                            <td class="border-none font-medium">${stats.executed.toLocaleString()}</td>
-                            <td class="border-none font-medium">${stats.closed.toLocaleString()}</td>
-                            <td class="border-none font-medium">₹${Math.round(stats.gmv).toLocaleString()}</td>
-                            <td class="border-none font-medium text-emerald-600">₹${Math.round(stats.margin).toLocaleString()}</td>
-                            <td class="border-none font-black text-slate-800">${(stats.gmv > 0 ? (stats.margin / stats.gmv * 100).toFixed(2) : '0.00')}%</td>
-                        </tr>`;
+                    rowsHtml += `<tr class="drill-down-row" onclick="showCategoryZoneDetails('${owner}', '${displayName}', '${cat}')"><td class="text-left px-8 py-4 font-bold text-slate-700 border-none flex items-center gap-3"><div class="w-1 h-1 rounded-full bg-blue-500"></div>${displayName}</td><td class="border-none font-medium">${stats.executed.toLocaleString()}</td><td class="border-none font-medium">${stats.closed.toLocaleString()}</td><td class="border-none font-medium">₹${Math.round(stats.gmv).toLocaleString()}</td><td class="border-none font-medium text-emerald-600">₹${Math.round(stats.margin).toLocaleString()}</td><td class="border-none font-black text-slate-800">${(stats.gmv > 0 ? (stats.margin / stats.gmv * 100).toFixed(2) : '0.00')}%</td></tr>`;
                 });
-
-                const html = `
-                    <div class="zonal-card">
-                        <div class="bg-slate-900 text-white py-5 px-8 flex justify-between items-center">
-                            <h3 class="font-black text-xs uppercase tracking-[0.2em]">${cat} Territory Breakdown</h3>
-                        </div>
-                        <div class="overflow-x-auto p-4">
-                            <table class="w-full summary-table">
-                                <thead>
-                                    <tr class="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-400">
-                                        <th class="text-left px-8 py-4 border-none">Zone / Owner</th>
-                                        <th class="border-none">Executed</th>
-                                        <th class="border-none">Closed</th>
-                                        <th class="border-none">GMV</th>
-                                        <th class="border-none">Margin</th>
-                                        <th class="border-none">MMU</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${rowsHtml}
-                                    <tr class="bg-slate-50/50 border-t-2 border-slate-100">
-                                        <td class="text-left px-8 py-5 font-black text-slate-900 text-xs border-none">GRAND TOTAL</td>
-                                        <td class="border-none font-black">${grandTotal.executed.toLocaleString()}</td>
-                                        <td class="border-none font-black">${grandTotal.closed.toLocaleString()}</td>
-                                        <td class="border-none font-black">₹${Math.round(grandTotal.gmv).toLocaleString()}</td>
-                                        <td class="border-none font-black highlight-green">₹${Math.round(grandTotal.margin).toLocaleString()}</td>
-                                        <td class="border-none font-black text-emerald-600">${(grandTotal.gmv > 0 ? (grandTotal.margin / grandTotal.gmv * 100).toFixed(2) : '0.00')}%</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>`;
-                container.insertAdjacentHTML('beforeend', html);
+                container.insertAdjacentHTML('beforeend', `<div class="zonal-card"><div class="bg-slate-900 text-white py-5 px-8 flex justify-between items-center"><h3 class="font-black text-xs uppercase tracking-[0.2em]">${cat} Territory Breakdown</h3></div><div class="overflow-x-auto p-4"><table class="w-full summary-table"><thead><tr class="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-400"><th class="text-left px-8 py-4 border-none">Zone / Owner</th><th class="border-none">Executed</th><th class="border-none">Closed</th><th class="border-none">GMV</th><th class="border-none">Margin</th><th class="border-none">MMU</th></tr></thead><tbody>${rowsHtml}<tr class="bg-slate-50/50 border-t-2 border-slate-100"><td class="text-left px-8 py-5 font-black text-slate-900 text-xs border-none">GRAND TOTAL</td><td class="border-none font-black">${grandTotal.executed.toLocaleString()}</td><td class="border-none font-black">${grandTotal.closed.toLocaleString()}</td><td class="border-none font-black">₹${Math.round(grandTotal.gmv).toLocaleString()}</td><td class="border-none font-black highlight-green">₹${Math.round(grandTotal.margin).toLocaleString()}</td><td class="border-none font-black text-emerald-600">${(grandTotal.gmv > 0 ? (grandTotal.margin / grandTotal.gmv * 100).toFixed(2) : '0.00')}%</td></tr></tbody></table></div></div>`);
             });
         }
 
@@ -866,57 +860,19 @@
                 row.__agingDays = diffDays;
                 return diffDays > 7;
             });
-
             const container = document.getElementById('risk-category-tables');
             const mainContainer = document.getElementById('risk-view-container');
             document.getElementById('risk-trade-count').textContent = riskTrades.length;
-
             if (riskTrades.length === 0) { mainContainer.classList.add('hidden'); return; }
-            mainContainer.classList.remove('hidden');
-            container.innerHTML = '';
-
+            mainContainer.classList.remove('hidden'); container.innerHTML = '';
             const grouped = {};
             riskTrades.forEach(row => {
                 const skuCat = String(findColumn(row, 'Sku Category') || 'Others').trim();
                 if (!grouped[skuCat]) grouped[skuCat] = [];
                 grouped[skuCat].push(row);
             });
-
             Object.entries(grouped).forEach(([catName, trades]) => {
-                const html = `
-                    <div class="glass-card !p-0 overflow-hidden border-2 border-red-50">
-                        <div class="bg-red-50/50 px-6 py-4 border-b border-red-100 flex justify-between items-center">
-                            <h4 class="font-black uppercase tracking-widest text-[11px] text-red-700">${catName} Aging Risks</h4>
-                            <span class="text-[10px] font-bold text-red-500">${trades.length} Impacted Trades</span>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full risk-table">
-                                <thead>
-                                    <tr>
-                                        <th class="text-left">Supply Owner</th>
-                                        <th class="text-left">Contract Date</th>
-                                        <th class="text-left">Buyer</th>
-                                        <th class="text-left">Supplier</th>
-                                        <th class="text-right">GMV Potential</th>
-                                        <th class="text-center">Aging</th>
-                                    </tr>
-                                </thead>
-                                <tbody>${trades.map(t => `
-                                    <tr>
-                                        <td class="font-bold text-slate-900">${findColumn(t, 'Supply Owner') || '-'}</td>
-                                        <td class="text-slate-500 font-medium">${findColumn(t, 'contractDate') || '-'}</td>
-                                        <td class="font-black text-slate-800">${findColumn(t, 'Buyer Name') || '-'}</td>
-                                        <td class="text-slate-600 font-medium">${findColumn(t, 'sellerName') || '-'}</td>
-                                        <td class="text-right font-black text-slate-600">₹${Math.round(cleanNumber(findColumn(t, 'Sale value( Contract/GMV)'))).toLocaleString()}</td>
-                                        <td class="text-center">
-                                            <span class="aging-badge bg-red-100 text-red-700">${t.__agingDays}d Delay</span>
-                                        </td>
-                                    </tr>`).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>`;
-                container.insertAdjacentHTML('beforeend', html);
+                container.insertAdjacentHTML('beforeend', `<div class="glass-card !p-0 overflow-hidden border-2 border-red-50"><div class="bg-red-50/50 px-6 py-4 border-b border-red-100 flex justify-between items-center"><h4 class="font-black uppercase tracking-widest text-[11px] text-red-700">${catName} Aging Risks</h4><span class="text-[10px] font-bold text-red-500">${trades.length} Impacted Trades</span></div><div class="overflow-x-auto"><table class="w-full risk-table"><thead><tr><th class="text-left">Supply Owner</th><th class="text-left">Contract Date</th><th class="text-left">Buyer</th><th class="text-left">Supplier</th><th class="text-right">GMV Potential</th><th class="text-center">Aging</th></tr></thead><tbody>${trades.map(t => `<tr><td class="font-bold text-slate-900">${findColumn(t, 'Supply Owner') || '-'}</td><td class="text-slate-500 font-medium">${findColumn(t, 'contractDate') || '-'}</td><td class="font-black text-slate-800">${findColumn(t, 'Buyer Name') || '-'}</td><td class="text-slate-600 font-medium">${findColumn(t, 'sellerName') || '-'}</td><td class="text-right font-black text-slate-600">₹${Math.round(cleanNumber(findColumn(t, 'Sale value( Contract/GMV)'))).toLocaleString()}</td><td class="text-center"><span class="aging-badge bg-red-100 text-red-700">${t.__agingDays}d Delay</span></td></tr>`).join('')}</tbody></table></div></div>`);
             });
         }
 
@@ -947,13 +903,10 @@
 
         function showError(msg) {
             const b = document.getElementById('error-box');
-            b.textContent = msg;
-            b.classList.remove('hidden');
+            b.textContent = msg; b.classList.remove('hidden');
             document.getElementById('initial-loader').classList.add('hidden');
         }
-
     </script>
 </body>
 
 </html>
-
