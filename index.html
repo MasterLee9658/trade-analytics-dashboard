@@ -305,6 +305,63 @@
         .refresh-btn.loading .refresh-icon {
             animation: spin 1s linear infinite;
         }
+
+        /* Date Filter */
+        .date-filter-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: white;
+            padding: 0.5rem 1.1rem;
+            border-radius: 1rem;
+            border: 1.5px solid #e2e8f0;
+            box-shadow: 0 2px 10px -3px rgba(0, 0, 0, 0.07);
+            transition: border-color 0.2s;
+        }
+
+        .date-filter-wrap:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.10);
+        }
+
+        .date-filter-label {
+            font-size: 0.6rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+
+        .date-filter-input {
+            border: none;
+            outline: none;
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #1e293b;
+            background: transparent;
+            cursor: pointer;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .snapshot-badge {
+            display: none;
+            align-items: center;
+            gap: 0.35rem;
+            background: #fef3c7;
+            color: #b45309;
+            font-size: 0.6rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.3rem 0.7rem;
+            border-radius: 0.6rem;
+            border: 1.5px solid #fde68a;
+        }
+
+        .snapshot-badge.visible {
+            display: flex;
+        }
     </style>
 </head>
 
@@ -340,6 +397,19 @@
             </div>
 
             <div class="flex items-center gap-4">
+                <!-- Date Filter -->
+                <div class="date-filter-wrap">
+                    <span class="date-filter-label">📅 Date</span>
+                    <input type="date" id="date-filter" class="date-filter-input" />
+                </div>
+                <span id="snapshot-badge" class="snapshot-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Snapshot
+                </span>
                 <button onclick="refreshData()" id="refresh-btn" class="refresh-btn">
                     <svg class="refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
@@ -565,8 +635,111 @@
     </div>
 
     <script>
-        // Password Protection Configuration
-        const DASHBOARD_PASSWORD = 'np@2026'; // Change this to your desired password
+        // ─── Date Snapshot Utilities ───────────────────────────────────────────
+        const SNAPSHOT_KEY_PREFIX = 'np_dashboard_snapshot_';
+
+        function todayStr() {
+            // Returns YYYY-MM-DD in local time
+            const d = new Date();
+            return d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0');
+        }
+
+        // Save a daily snapshot of computed metrics to localStorage
+        function saveDailySnapshot(metrics) {
+            const key = SNAPSHOT_KEY_PREFIX + todayStr();
+            try {
+                localStorage.setItem(key, JSON.stringify({ savedAt: new Date().toISOString(), metrics }));
+            } catch (e) { /* quota exceeded – silently ignore */ }
+        }
+
+        // Load a snapshot for a given date string (YYYY-MM-DD), returns null if none
+        function loadSnapshot(dateStr) {
+            try {
+                const raw = localStorage.getItem(SNAPSHOT_KEY_PREFIX + dateStr);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) { return null; }
+        }
+
+        // Get all dates that have snapshots stored
+        function getSnapshotDates() {
+            const dates = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && k.startsWith(SNAPSHOT_KEY_PREFIX)) {
+                    dates.push(k.replace(SNAPSHOT_KEY_PREFIX, ''));
+                }
+            }
+            return dates.sort();
+        }
+
+        // Render metrics from a snapshot object
+        function renderSnapshot(snap) {
+            const m = snap.metrics;
+            document.getElementById('stat-executed').textContent = (m.totalExecuted || 0).toLocaleString();
+            document.getElementById('stat-closed').textContent = (m.totalClosed || 0).toLocaleString();
+            document.getElementById('stat-confirmed').textContent = (m.confirmedCount || 0).toLocaleString();
+            document.getElementById('stat-buyers-total').textContent = (m.activeBuyers || 0).toLocaleString();
+            document.getElementById('stat-buyers-fta').textContent = (m.ftaBuyers || 0).toLocaleString();
+            document.getElementById('stat-buyers-ret').textContent = ((m.activeBuyers || 0) - (m.ftaBuyers || 0)).toLocaleString();
+            document.getElementById('stat-sellers').textContent = (m.sellers || 0).toLocaleString();
+            document.getElementById('stat-gmv').textContent = '₹' + Math.round(m.gmv || 0).toLocaleString();
+            document.getElementById('stat-margin').textContent = '₹' + Math.round(m.margin || 0).toLocaleString();
+            document.getElementById('stat-potential').textContent = '₹' + Math.round(m.potentialMargin || 0).toLocaleString();
+            document.getElementById('stat-avg-gmv-trade').textContent = '₹' + Math.round(m.avgGmvPerTrade || 0).toLocaleString();
+            const netP = m.netMarginPerc || 0;
+            document.getElementById('net-margin-perc-display').textContent = (netP * 100).toFixed(2) + '%';
+            document.getElementById('net-avg-margin').textContent = '₹' + Math.round(m.avgMarginPerTrade || 0).toLocaleString();
+            document.getElementById('net-margin-progress').style.width = Math.min(netP * 100 * 10, 100) + '%';
+
+            // Show only top metric cards; hide table-heavy sections
+            document.getElementById('top-metrics-row').classList.remove('hidden');
+            document.getElementById('net-margin-row').classList.remove('hidden');
+            document.getElementById('category-mmu-row').classList.add('hidden');
+            document.getElementById('matrix-container').classList.add('hidden');
+            document.getElementById('regional-views').innerHTML = '';
+            document.getElementById('risk-view-container').classList.add('hidden');
+            document.getElementById('initial-loader').classList.add('hidden');
+        }
+
+        // ─── Date Filter Setup ─────────────────────────────────────────────────
+        function setupDateFilter() {
+            const dateInput = document.getElementById('date-filter');
+            const badge = document.getElementById('snapshot-badge');
+            const today = todayStr();
+            dateInput.value = today;
+            dateInput.max = today; // Cannot pick future dates
+
+            dateInput.addEventListener('change', () => {
+                const selected = dateInput.value;
+                if (selected === today) {
+                    // Show live data
+                    badge.classList.remove('visible');
+                    updateView();
+                } else {
+                    const snap = loadSnapshot(selected);
+                    if (snap) {
+                        badge.classList.add('visible');
+                        renderSnapshot(snap);
+                    } else {
+                        badge.classList.remove('visible');
+                        // No snapshot available – show message
+                        document.getElementById('top-metrics-row').classList.add('hidden');
+                        document.getElementById('net-margin-row').classList.add('hidden');
+                        document.getElementById('category-mmu-row').classList.add('hidden');
+                        document.getElementById('matrix-container').classList.add('hidden');
+                        document.getElementById('regional-views').innerHTML = '';
+                        document.getElementById('risk-view-container').classList.add('hidden');
+                        document.getElementById('initial-loader').classList.add('hidden');
+                        showError('No snapshot saved for ' + selected + '. Only dates where the dashboard was loaded will have data.');
+                    }
+                }
+            });
+        }
+
+        // ─── Password Protection ───────────────────────────────────────────────
+        const DASHBOARD_PASSWORD = 'ninjacart2026'; // Change this to your desired password
 
         function checkPassword() {
             const input = document.getElementById('password-input');
@@ -578,6 +751,7 @@
                 overlay.style.transition = 'opacity 0.3s ease-out';
                 setTimeout(() => {
                     overlay.style.display = 'none';
+                    setupDateFilter();
                     init(); // Initialize dashboard after successful login
                 }, 300);
                 error.style.display = 'none';
@@ -709,9 +883,11 @@
             const activeBuyersUnique = [...new Set(closedData.map(getBuyerId))].filter(Boolean);
             const ftaBuyersUnique = [...new Set(closedData.filter(row => String(findColumn(row, 'FTA Check') || '').toLowerCase().trim() === 'yes').map(getBuyerId))].filter(Boolean);
 
+            const sellersUnique = [...new Set(closedData.map(row => findColumn(row, 'sellerName')))].filter(Boolean);
             const avgGmvPerTrade = totalClosed > 0 ? (gmv / totalClosed) : 0;
             const netMarginPerc = gmv > 0 ? (margin / gmv) : 0;
             const potentialMargin = (totalExecuted - totalClosed) * avgGmvPerTrade * netMarginPerc;
+            const avgMarginPerTrade = totalClosed > 0 ? margin / totalClosed : 0;
 
             // UI Updates
             document.getElementById('stat-executed').textContent = totalExecuted.toLocaleString();
@@ -721,15 +897,32 @@
             document.getElementById('stat-buyers-fta').textContent = ftaBuyersUnique.length.toLocaleString();
             document.getElementById('stat-buyers-ret').textContent = (activeBuyersUnique.length - ftaBuyersUnique.length).toLocaleString();
 
-            document.getElementById('stat-sellers').textContent = [...new Set(closedData.map(row => findColumn(row, 'sellerName')))].filter(Boolean).length;
+            document.getElementById('stat-sellers').textContent = sellersUnique.length;
             document.getElementById('stat-gmv').textContent = '₹' + Math.round(gmv).toLocaleString();
             document.getElementById('stat-margin').textContent = '₹' + Math.round(margin).toLocaleString();
             document.getElementById('stat-potential').textContent = '₹' + Math.round(potentialMargin).toLocaleString();
             document.getElementById('stat-avg-gmv-trade').textContent = '₹' + Math.round(avgGmvPerTrade).toLocaleString();
 
             document.getElementById('net-margin-perc-display').textContent = (netMarginPerc * 100).toFixed(2) + '%';
-            document.getElementById('net-avg-margin').textContent = '₹' + Math.round(totalClosed > 0 ? margin / totalClosed : 0).toLocaleString();
+            document.getElementById('net-avg-margin').textContent = '₹' + Math.round(avgMarginPerTrade).toLocaleString();
             document.getElementById('net-margin-progress').style.width = Math.min(netMarginPerc * 100 * 10, 100) + '%';
+
+            // ── Save today's snapshot to localStorage ──────────────────────────
+            saveDailySnapshot({
+                totalExecuted,
+                totalClosed,
+                confirmedCount: confirmedGridData.length,
+                activeBuyers: activeBuyersUnique.length,
+                ftaBuyers: ftaBuyersUnique.length,
+                sellers: sellersUnique.length,
+                gmv,
+                margin,
+                potentialMargin,
+                avgGmvPerTrade,
+                netMarginPerc,
+                avgMarginPerTrade,
+                selectedMonth
+            });
 
             renderCategoryMMU(monthData);
             renderNPMatrix(monthData);
@@ -910,4 +1103,3 @@
 </body>
 
 </html>
-
