@@ -362,6 +362,84 @@
         .snapshot-badge.visible {
             display: flex;
         }
+
+        /* Multi-Month Dropdown */
+        .month-dropdown-wrap {
+            position: relative;
+        }
+        .month-dropdown-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: white;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 9999px;
+            padding: 0.5rem 1.25rem;
+            cursor: pointer;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #1e293b;
+            box-shadow: 0 2px 8px -3px rgba(0,0,0,0.08);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .month-dropdown-btn:hover { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .month-dropdown-btn.active { border-color: #3b82f6; }
+        .month-dropdown-label-text { color: #94a3b8; font-size: 0.6rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; margin-right: 0.25rem; }
+        .month-dropdown-badge { background: #3b82f6; color: white; border-radius: 9999px; padding: 1px 7px; font-size: 0.6rem; font-weight: 900; }
+        .month-dropdown-panel {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: white;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 1.25rem;
+            box-shadow: 0 10px 40px -8px rgba(0,0,0,0.15);
+            min-width: 200px;
+            z-index: 100;
+            overflow: hidden;
+        }
+        .month-dropdown-panel.open { display: block; }
+        .month-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem 0.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .month-panel-header span { font-size: 0.6rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; }
+        .month-panel-header button { font-size: 0.6rem; font-weight: 900; color: #3b82f6; background: none; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; }
+        .month-option {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .month-option:hover { background: #f8fafc; }
+        .month-option input[type=checkbox] { accent-color: #3b82f6; width: 14px; height: 14px; cursor: pointer; }
+        .month-option label { font-size: 0.8rem; font-weight: 700; color: #334155; cursor: pointer; }
+        .month-apply-btn {
+            display: block;
+            width: calc(100% - 1.5rem);
+            margin: 0.5rem 0.75rem 0.75rem;
+            padding: 0.6rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .month-apply-btn:hover { opacity: 0.9; }
     </style>
 </head>
 
@@ -418,10 +496,22 @@
                     </svg>
                     Refresh
                 </button>
-                <div class="bg-white p-2 px-5 rounded-full shadow-sm border border-slate-200 flex items-center gap-4">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Select Month</span>
-                    <select id="main-month-filter"
-                        class="bg-transparent border-none text-slate-900 font-extrabold text-sm focus:ring-0 cursor-pointer outline-none"></select>
+                <!-- Multi-Month Filter -->
+                <div class="month-dropdown-wrap" id="month-dropdown-wrap">
+                    <button class="month-dropdown-btn" id="month-dropdown-btn" onclick="toggleMonthDropdown()">
+                        <span class="month-dropdown-label-text">Month</span>
+                        <span id="month-btn-label">All</span>
+                        <span id="month-btn-badge" class="month-dropdown-badge" style="display:none">0</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div class="month-dropdown-panel" id="month-dropdown-panel">
+                        <div class="month-panel-header">
+                            <span>Select Months</span>
+                            <button onclick="selectAllMonths()">Select All</button>
+                        </div>
+                        <div id="month-checkbox-list"></div>
+                        <button class="month-apply-btn" onclick="applyMonthFilter()">Apply</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -749,7 +839,7 @@
         }
 
         // ─── Password Protection ───────────────────────────────────────────────
-        const DASHBOARD_PASSWORD = 'np@2026'; // Change this to your desired password
+        const DASHBOARD_PASSWORD = 'ninjacart2026'; // Change this to your desired password
 
         function checkPassword() {
             const input = document.getElementById('password-input');
@@ -845,11 +935,8 @@
                 if (rawData.length > 0) {
                     const months = [...new Set(rawData.map(row => findColumn(row, 'GMV Month')))].filter(Boolean);
                     months.sort((a, b) => new Date('01-' + a) - new Date('01-' + b));
-                    const mainSelect = document.getElementById('main-month-filter');
-                    mainSelect.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
-                    mainSelect.value = months[months.length - 1];
+                    buildMonthCheckboxes(months, [months[months.length - 1]]);
                     updateView();
-                    mainSelect.addEventListener('change', updateView);
                 } else {
                     showError("No data found.");
                 }
@@ -868,17 +955,69 @@
             });
         }
 
-        function updateView() {
-            const selectedMonth = document.getElementById('main-month-filter').value;
+        // ─── Multi-Month Helpers ────────────────────────────────────────────────
+        function buildMonthCheckboxes(months, defaultSelected) {
+            const list = document.getElementById('month-checkbox-list');
+            list.innerHTML = months.map(m => `
+                <div class="month-option">
+                    <input type="checkbox" id="mchk_${m.replace(/\s/g,'_')}" value="${m}" ${defaultSelected.includes(m) ? 'checked' : ''}>
+                    <label for="mchk_${m.replace(/\s/g,'_')}">${m}</label>
+                </div>`).join('');
+            updateMonthBtnLabel();
+        }
 
-            const monthData = rawData.filter(row => String(findColumn(row, 'GMV Month')) === selectedMonth);
+        function getSelectedMonths() {
+            return [...document.querySelectorAll('#month-checkbox-list input[type=checkbox]:checked')].map(c => c.value);
+        }
+
+        function updateMonthBtnLabel() {
+            const sel = getSelectedMonths();
+            const btn = document.getElementById('month-btn-label');
+            const badge = document.getElementById('month-btn-badge');
+            if (sel.length === 0) { btn.textContent = 'None'; badge.style.display = 'none'; }
+            else if (sel.length === 1) { btn.textContent = sel[0]; badge.style.display = 'none'; }
+            else { btn.textContent = sel[sel.length - 1]; badge.textContent = sel.length; badge.style.display = 'inline'; }
+        }
+
+        function toggleMonthDropdown() {
+            const panel = document.getElementById('month-dropdown-panel');
+            const btn = document.getElementById('month-dropdown-btn');
+            const isOpen = panel.classList.toggle('open');
+            btn.classList.toggle('active', isOpen);
+        }
+
+        function selectAllMonths() {
+            document.querySelectorAll('#month-checkbox-list input[type=checkbox]').forEach(c => c.checked = true);
+        }
+
+        function applyMonthFilter() {
+            document.getElementById('month-dropdown-panel').classList.remove('open');
+            document.getElementById('month-dropdown-btn').classList.remove('active');
+            updateMonthBtnLabel();
+            updateView();
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const wrap = document.getElementById('month-dropdown-wrap');
+            if (wrap && !wrap.contains(e.target)) {
+                document.getElementById('month-dropdown-panel').classList.remove('open');
+                document.getElementById('month-dropdown-btn').classList.remove('active');
+            }
+        });
+
+        function updateView() {
+            const selectedMonths = getSelectedMonths();
+            if (selectedMonths.length === 0) return;
+
+            const monthData = rawData.filter(row => selectedMonths.includes(String(findColumn(row, 'GMV Month'))));
             const closedData = monthData.filter(row => String(findColumn(row, 'Trade Status') || '').toLowerCase().trim() === 'closed');
 
             // Logic for Confirmed Orders from formula criteria
             const confirmedGridData = rawData.filter(row => {
                 const bjMonth = String(findColumn(row, 'Formula2') || '');
                 const blStatus = String(findColumn(row, 'Status 2') || '').toLowerCase().trim();
-                return bjMonth === selectedMonth && blStatus === 'confirmed';
+                return selectedMonths.includes(bjMonth) && blStatus === 'confirmed';
             });
 
             // Standard Metrics
