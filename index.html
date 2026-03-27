@@ -428,20 +428,32 @@
 
         <!-- Metric Grid -->
         <div id="top-metrics-row" class="hidden mb-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-11 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-12 gap-4">
+                <!-- Total No. Trades -->
+                <div class="glass-card xl:col-span-2 border-2 border-slate-900 bg-slate-900 text-white">
+                    <p class="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-2">Total No. Trades</p>
+                    <h3 id="stat-total-trades" class="text-3xl font-black">0</h3>
+                </div>
+
                 <div class="glass-card">
                     <p class="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-2">Executed</p>
                     <h3 id="stat-executed" class="text-2xl font-black text-slate-800">0</h3>
                 </div>
+
+                <div class="glass-card">
+                    <p class="text-blue-600 text-[10px] uppercase font-black tracking-widest mb-2">Confirmed</p>
+                    <h3 id="stat-confirmed" class="text-2xl font-black text-blue-600">0</h3>
+                </div>
+
                 <div class="glass-card">
                     <p class="text-emerald-600 text-[10px] uppercase font-black tracking-widest mb-2">Closed</p>
                     <h3 id="stat-closed" class="text-2xl font-black text-emerald-600">0</h3>
                 </div>
 
-                <!-- Confirmed Orders Gird -->
-                <div class="glass-card border-2 border-blue-500 bg-blue-50/20">
-                    <p class="text-blue-600 text-[10px] uppercase font-black tracking-widest mb-2">Confirmed Orders</p>
-                    <h3 id="stat-confirmed" class="text-3xl font-black text-blue-700">0</h3>
+                <!-- Open Trades -->
+                <div class="glass-card border-2 border-orange-500 bg-orange-50/20">
+                    <p class="text-orange-600 text-[10px] uppercase font-black tracking-widest mb-2">Open Trades</p>
+                    <h3 id="stat-open-trades" class="text-2xl font-black text-orange-700">0</h3>
                 </div>
 
                 <div class="glass-card xl:col-span-2">
@@ -473,14 +485,9 @@
                     <p class="text-emerald-100 text-[9px] uppercase font-black tracking-widest mb-1">Margin</p>
                     <h3 id="stat-margin" class="text-xl font-black">₹0</h3>
                 </div>
-                <div class="glass-card bg-orange-600 text-white border-none xl:col-span-2">
-                    <p class="text-orange-100 text-[9px] uppercase font-black tracking-widest mb-1">Potential Add.
-                        Margin</p>
+                <div class="glass-card bg-orange-600 text-white border-none">
+                    <p class="text-orange-100 text-[9px] uppercase font-black tracking-widest mb-1">Pot. Add. Margin</p>
                     <h3 id="stat-potential" class="text-xl font-black">₹0</h3>
-                </div>
-                <div class="glass-card border-2 border-blue-100 xl:col-span-1 flex flex-col justify-center">
-                    <p class="text-blue-500 text-[10px] uppercase font-black tracking-widest mb-2">Avg GMV / Trade</p>
-                    <h3 id="stat-avg-gmv-trade" class="text-xl font-black text-slate-800 tracking-tight">₹0</h3>
                 </div>
             </div>
         </div>
@@ -677,9 +684,13 @@
         // Render metrics from a snapshot object
         function renderSnapshot(snap) {
             const m = snap.metrics;
+            const snapTotalNoTrades = (m.totalExecuted || 0) + (m.confirmedCount || 0);
+            const snapOpenTrades = snapTotalNoTrades - (m.totalClosed || 0);
+            document.getElementById('stat-total-trades').textContent = snapTotalNoTrades.toLocaleString();
             document.getElementById('stat-executed').textContent = (m.totalExecuted || 0).toLocaleString();
-            document.getElementById('stat-closed').textContent = (m.totalClosed || 0).toLocaleString();
             document.getElementById('stat-confirmed').textContent = (m.confirmedCount || 0).toLocaleString();
+            document.getElementById('stat-closed').textContent = (m.totalClosed || 0).toLocaleString();
+            document.getElementById('stat-open-trades').textContent = snapOpenTrades.toLocaleString();
             document.getElementById('stat-buyers-total').textContent = (m.activeBuyers || 0).toLocaleString();
             document.getElementById('stat-buyers-fta').textContent = (m.ftaBuyers || 0).toLocaleString();
             document.getElementById('stat-buyers-ret').textContent = ((m.activeBuyers || 0) - (m.ftaBuyers || 0)).toLocaleString();
@@ -687,7 +698,6 @@
             document.getElementById('stat-gmv').textContent = '₹' + Math.round(m.gmv || 0).toLocaleString();
             document.getElementById('stat-margin').textContent = '₹' + Math.round(m.margin || 0).toLocaleString();
             document.getElementById('stat-potential').textContent = '₹' + Math.round(m.potentialMargin || 0).toLocaleString();
-            document.getElementById('stat-avg-gmv-trade').textContent = '₹' + Math.round(m.avgGmvPerTrade || 0).toLocaleString();
             const netP = m.netMarginPerc || 0;
             document.getElementById('net-margin-perc-display').textContent = (netP * 100).toFixed(2) + '%';
             document.getElementById('net-avg-margin').textContent = '₹' + Math.round(m.avgMarginPerTrade || 0).toLocaleString();
@@ -739,7 +749,7 @@
         }
 
         // ─── Password Protection ───────────────────────────────────────────────
-        const DASHBOARD_PASSWORD = 'np@2026'; // Change this to your desired password
+        const DASHBOARD_PASSWORD = 'ninjacart2026'; // Change this to your desired password
 
         function checkPassword() {
             const input = document.getElementById('password-input');
@@ -873,7 +883,12 @@
 
             // Standard Metrics
             const totalExecuted = monthData.length;
+            const totalConfirmed = confirmedGridData.length;
             const totalClosed = closedData.length;
+
+            // New Metrics
+            const totalNoTrades = totalExecuted + totalConfirmed;
+            const openTrades = totalNoTrades - totalClosed;
 
             const gmv = closedData.reduce((sum, row) => sum + cleanNumber(findColumn(row, 'Sale value( Contract/GMV)')), 0);
             const margin = closedData.reduce((sum, row) => sum + cleanNumber(findColumn(row, 'Trade Margin')), 0);
@@ -890,9 +905,11 @@
             const avgMarginPerTrade = totalClosed > 0 ? margin / totalClosed : 0;
 
             // UI Updates
+            document.getElementById('stat-total-trades').textContent = totalNoTrades.toLocaleString();
             document.getElementById('stat-executed').textContent = totalExecuted.toLocaleString();
+            document.getElementById('stat-confirmed').textContent = totalConfirmed.toLocaleString();
             document.getElementById('stat-closed').textContent = totalClosed.toLocaleString();
-            document.getElementById('stat-confirmed').textContent = confirmedGridData.length.toLocaleString();
+            document.getElementById('stat-open-trades').textContent = openTrades.toLocaleString();
             document.getElementById('stat-buyers-total').textContent = activeBuyersUnique.length.toLocaleString();
             document.getElementById('stat-buyers-fta').textContent = ftaBuyersUnique.length.toLocaleString();
             document.getElementById('stat-buyers-ret').textContent = (activeBuyersUnique.length - ftaBuyersUnique.length).toLocaleString();
@@ -901,7 +918,6 @@
             document.getElementById('stat-gmv').textContent = '₹' + Math.round(gmv).toLocaleString();
             document.getElementById('stat-margin').textContent = '₹' + Math.round(margin).toLocaleString();
             document.getElementById('stat-potential').textContent = '₹' + Math.round(potentialMargin).toLocaleString();
-            document.getElementById('stat-avg-gmv-trade').textContent = '₹' + Math.round(avgGmvPerTrade).toLocaleString();
 
             document.getElementById('net-margin-perc-display').textContent = (netMarginPerc * 100).toFixed(2) + '%';
             document.getElementById('net-avg-margin').textContent = '₹' + Math.round(avgMarginPerTrade).toLocaleString();
@@ -911,7 +927,7 @@
             saveDailySnapshot({
                 totalExecuted,
                 totalClosed,
-                confirmedCount: confirmedGridData.length,
+                confirmedCount: totalConfirmed,
                 activeBuyers: activeBuyersUnique.length,
                 ftaBuyers: ftaBuyersUnique.length,
                 sellers: sellersUnique.length,
@@ -1103,4 +1119,3 @@
 </body>
 
 </html>
-
