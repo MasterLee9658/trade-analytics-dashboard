@@ -30,6 +30,9 @@
         #detailOverlay.active {
             transform: translateX(0);
         }
+
+        .toggle-btn.active { @apply bg-indigo-600 text-white shadow-md; }
+        .toggle-btn:not(.active) { @apply text-slate-400 hover:bg-slate-100; }
     </style>
 </head>
 <body class="min-h-screen overflow-x-hidden">
@@ -62,20 +65,20 @@
                 <div class="mb-4 flex justify-between items-end">
                     <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1.01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         Detailed Audit Log
                     </h4>
-                    <div class="text-[10px] text-slate-400 font-bold uppercase">Scroll horizontally to see all comments</div>
+                    <div class="text-[10px] text-slate-400 font-bold uppercase">Scroll horizontally for comments</div>
                 </div>
 
                 <div class="flex-1 bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm flex flex-col">
                     <div class="overflow-auto custom-scroll flex-1">
-                        <table class="w-full text-xs text-left min-w-[1200px]">
+                        <table class="w-full text-xs text-left min-w-[1400px]">
                             <thead class="bg-slate-50 text-slate-500 uppercase font-bold sticky top-0 z-10">
                                 <tr>
-                                    <th class="px-4 py-4 border-b border-slate-200">Program Name</th>
-                                    <th class="px-4 py-4 border-b border-slate-200">Vendor Name</th>
+                                    <th class="px-4 py-4 border-b border-slate-200">Program</th>
+                                    <th class="px-4 py-4 border-b border-slate-200">Vendor</th>
                                     <th class="px-4 py-4 border-b border-slate-200">Doc Type</th>
                                     <th class="px-4 py-4 border-b border-slate-200">Brief Comments</th>
                                     <th class="px-4 py-4 border-b border-slate-200">Detailed Comments</th>
@@ -94,7 +97,7 @@
         </div>
     </div>
 
-    <!-- Main Navigation -->
+    <!-- Navigation -->
     <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
         <div class="max-w-[1400px] mx-auto px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-4">
@@ -130,7 +133,7 @@
             <button onclick="fetchData()" class="underline font-bold hover:text-rose-900 ml-4">Retry</button>
         </div>
 
-        <!-- Global Stats Row -->
+        <!-- Global Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
             <div class="stat-card">
                 <div class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Total Volume</div>
@@ -145,14 +148,43 @@
                 <div id="totalRejected" class="text-3xl font-extrabold text-rose-600">0</div>
             </div>
             <div class="stat-card bg-slate-900 !border-none text-white">
-                <div class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">System Accuracy</div>
-                <div id="accuracyRate" class="text-3xl font-extrabold text-indigo-400">0%</div>
+                <div class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Tickets Actioned</div>
+                <div id="totalTicketsActioned" class="text-3xl font-extrabold text-indigo-400">0</div>
+            </div>
+        </div>
+
+        <!-- Tickets Actioned Day Wise Table -->
+        <div class="mb-10 table-container">
+            <div class="p-5 border-b border-slate-100 bg-white/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <h3 class="font-bold text-slate-800">Tickets Actioned (Day Wise)</h3>
+                    <div class="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                        <button onclick="setDayFilter('7')" id="btn-7" class="toggle-btn active px-3 py-1 text-[10px] font-bold rounded-md transition-all">LAST 7D</button>
+                        <button onclick="setDayFilter('all')" id="btn-all" class="toggle-btn px-3 py-1 text-[10px] font-bold rounded-md transition-all">ALL TIME</button>
+                    </div>
+                </div>
+                <div class="relative w-full md:w-64">
+                    <input type="text" id="daySearch" oninput="renderDayWiseTable()" placeholder="Search date..." class="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 pl-8 pr-3 text-xs focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                    <svg class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+            <div class="overflow-x-auto max-h-[350px] custom-scroll">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-[10px] text-slate-400 uppercase tracking-widest bg-slate-50/50 sticky top-0 z-10">
+                        <tr>
+                            <th class="px-6 py-4">Action Date</th>
+                            <th class="px-6 py-4 text-right">Unique User IDs</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dayWiseBody" class="divide-y divide-slate-100 bg-white">
+                        <!-- Rows injected here -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
         <!-- Dashboard Tables Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Left: Market Table -->
             <div class="table-container">
                 <div class="p-5 border-b border-slate-100 bg-white/50 flex justify-between items-center">
                     <h3 class="font-bold text-slate-800">Market Performance</h3>
@@ -174,7 +206,6 @@
                 </div>
             </div>
 
-            <!-- Right: Analyst Table -->
             <div class="table-container">
                 <div class="p-5 border-b border-slate-100 bg-white/50">
                     <h3 class="font-bold text-slate-800">Analyst Rankings</h3>
@@ -202,23 +233,33 @@
         
         let dataset = [];
         let filteredDataset = [];
+        let dayLimit = '7'; // Default filter
+        let currentDayWiseStats = {};
         
         const MAPPING = {
-            analyst: ['Analyst Name', 'Action Taken By', 'Analyst', 'Name'],
-            status: ['Final Status', 'Status', 'Final Result', 'Trade Status'],
+            analyst: ['Analyst Name', 'Action Taken By', 'Analyst', 'Analyst_Name'],
+            status: ['Final Status', 'Status', 'Final Result', 'Trade Status', 'Case Status'],
             market: ['Facility', 'Market Name', 'Kolkata_Market', 'Market', 'Location'],
-            month: ['Month', 'Period', 'GMV Month'],
-            vendor: ['Vendor Name', 'Vendor', 'Supplier'],
-            program: ['Program Name', 'Program', 'Trade Program'],
-            docType: ['Type of Document', 'Doc Type', 'Document'],
-            briefComment: ['Brief Comments', 'Rejection Comments', 'Brief'],
-            detailedComment: ['Detailed Comments', 'Audit Detail', 'Detailed'],
-            shortComment: ['Short Comments', 'Short', 'Summary']
+            month: ['Month', 'Period', 'GMV Month', 'Cycle'],
+            date: ['Date', 'Action Date', 'Created Date', 'Time'],
+            userId: ['User ID', 'UserId', 'ID', 'Account ID', 'User_ID'],
+            vendor: ['Vendor Name', 'Vendor', 'Supplier', 'Vendor_Name'],
+            program: ['Program Name', 'Program', 'Trade Program', 'Program_Name'],
+            docType: ['Type of Document', 'Doc Type', 'Document', 'Document Type'],
+            briefComment: ['Brief Comments', 'Brief Comment', 'Rejection Comments', 'Brief'],
+            detailedComment: ['Detailed Comments', 'Detailed Comment', 'Audit Detail', 'Detail'],
+            shortComment: ['Short Comments', 'Short Comment', 'Short', 'Summary']
         };
 
         function getCol(row, targets) {
             const keys = Object.keys(row);
-            const key = keys.find(k => targets.some(t => k.trim().toLowerCase() === t.toLowerCase() || k.trim().toLowerCase().includes(t.toLowerCase())));
+            const key = keys.find(k => {
+                const cleanedK = k.trim().toLowerCase();
+                return targets.some(t => {
+                    const cleanedT = t.toLowerCase();
+                    return cleanedK === cleanedT || cleanedK.includes(cleanedT);
+                });
+            });
             return key ? row[key] : '-';
         }
 
@@ -243,6 +284,8 @@
                             status: getCol(row, MAPPING.status),
                             market: getCol(row, MAPPING.market),
                             month: getCol(row, MAPPING.month),
+                            date: getCol(row, MAPPING.date),
+                            userId: getCol(row, MAPPING.userId),
                             vendor: getCol(row, MAPPING.vendor),
                             program: getCol(row, MAPPING.program),
                             docType: getCol(row, MAPPING.docType),
@@ -296,17 +339,34 @@
             const month = document.getElementById('monthFilter').value;
             filteredDataset = month === 'all' ? dataset : dataset.filter(d => String(d.month) === month);
             
-            const stats = { total: filteredDataset.length, app: 0, rej: 0, markets: {}, analysts: {} };
+            const stats = { 
+                total: filteredDataset.length, 
+                app: 0, 
+                rej: 0, 
+                markets: {}, 
+                analysts: {},
+                dayWise: {},
+                uniqueUserIds: new Set()
+            };
 
             filteredDataset.forEach(d => {
                 const s = String(d.status || '').toLowerCase().trim();
                 const m = d.market || 'Unspecified';
                 const a = d.analyst || 'N/A';
+                const dt = d.date !== '-' ? String(d.date).split(' ')[0] : 'Unknown Date';
+                const uid = d.userId;
 
                 const isApp = s.includes('approve') || s === 'pass' || s === 'completed' || s === 'closed' || s === 'verified';
-                const isRej = s.includes('reject') || s === 'fail' || s === 'returned' || s === 'open';
+                const isRej = s.includes('reject') || s === 'fail' || s === 'returned' || s === 'open' || s.includes('rejection');
 
                 if (isApp) stats.app++; else if (isRej) stats.rej++;
+
+                // Day Wise Unique User Count
+                if (!stats.dayWise[dt]) stats.dayWise[dt] = new Set();
+                if (uid !== '-' && uid !== null && uid !== undefined) {
+                    stats.dayWise[dt].add(uid);
+                    stats.uniqueUserIds.add(uid);
+                }
 
                 if (!stats.markets[m]) stats.markets[m] = { total: 0, p: 0, f: 0 };
                 stats.markets[m].total++;
@@ -316,7 +376,47 @@
                 stats.analysts[a].total++;
                 if (isApp) stats.analysts[a].p++; if (isRej) stats.analysts[a].f++;
             });
+            
+            currentDayWiseStats = stats.dayWise;
             updateUI(stats);
+        }
+
+        function setDayFilter(limit) {
+            dayLimit = limit;
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${limit}`).classList.add('active');
+            renderDayWiseTable();
+        }
+
+        function renderDayWiseTable() {
+            const dwBody = document.getElementById('dayWiseBody');
+            const search = document.getElementById('daySearch').value.toLowerCase();
+            
+            let entries = Object.entries(currentDayWiseStats)
+                .sort((a, b) => new Date(b[0]) - new Date(a[0]));
+
+            if (search) {
+                entries = entries.filter(([date]) => date.toLowerCase().includes(search));
+            } else if (dayLimit === '7') {
+                entries = entries.slice(0, 7);
+            }
+
+            // Calculate max count for the bar background visual
+            const maxCount = Math.max(...entries.map(e => e[1].size), 1);
+
+            dwBody.innerHTML = entries.map(([date, userSet]) => {
+                const percentage = (userSet.size / maxCount) * 100;
+                return `
+                <tr class="hover:bg-slate-50 transition-colors relative">
+                    <td class="px-6 py-4 font-semibold text-slate-700 relative z-10">${date}</td>
+                    <td class="px-6 py-4 text-right relative z-10">
+                        <span class="inline-block bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg font-bold text-xs border border-indigo-100">
+                            ${userSet.size} Users
+                        </span>
+                    </td>
+                    <div class="absolute inset-y-1.5 left-0 bg-indigo-500/5 rounded-r-lg transition-all duration-700" style="width: ${percentage}%"></div>
+                </tr>
+            `}).join('') || '<tr><td colspan="2" class="px-6 py-8 text-center text-slate-400 italic">No matching dates found</td></tr>';
         }
 
         function showMarketDetails(marketName) {
@@ -339,13 +439,13 @@
             const dCaseBody = document.getElementById('detailCaseBody');
             dCaseBody.innerHTML = records.map(r => `
                 <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="px-4 py-4 font-bold text-slate-700 whitespace-nowrap">${r.program}</td>
-                    <td class="px-4 py-4 text-slate-600 whitespace-nowrap">${r.vendor}</td>
-                    <td class="px-4 py-4"><span class="bg-slate-100 px-2 py-1 rounded text-[10px] text-slate-500 font-medium">${r.docType}</span></td>
-                    <td class="px-4 py-4 text-slate-500 max-w-xs truncate" title="${r.briefComment}">${r.briefComment}</td>
-                    <td class="px-4 py-4 text-slate-500 max-w-sm truncate" title="${r.detailedComment}">${r.detailedComment}</td>
-                    <td class="px-4 py-4 text-slate-500 max-w-xs truncate" title="${r.shortComment}">${r.shortComment}</td>
-                    <td class="px-4 py-4 text-center font-medium text-slate-400">${r.analyst}</td>
+                    <td class="px-4 py-4 font-bold text-slate-700 whitespace-nowrap">${r.program || '-'}</td>
+                    <td class="px-4 py-4 text-slate-600 whitespace-nowrap">${r.vendor || '-'}</td>
+                    <td class="px-4 py-4"><span class="bg-slate-100 px-2 py-1 rounded text-[10px] text-slate-500 font-medium">${r.docType || '-'}</span></td>
+                    <td class="px-4 py-4 text-slate-500 max-w-xs truncate" title="${r.briefComment || ''}">${r.briefComment || '-'}</td>
+                    <td class="px-4 py-4 text-slate-500 max-w-sm truncate" title="${r.detailedComment || ''}">${r.detailedComment || '-'}</td>
+                    <td class="px-4 py-4 text-slate-500 max-w-xs truncate" title="${r.shortComment || ''}">${r.shortComment || '-'}</td>
+                    <td class="px-4 py-4 text-center font-medium text-slate-400">${r.analyst || '-'}</td>
                     <td class="px-4 py-4 text-right">
                         <span class="font-bold px-2 py-1 rounded text-[10px] uppercase ${r.isApp ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'}">
                             ${r.isApp ? 'Approved' : 'Rejected'}
@@ -367,8 +467,9 @@
             document.getElementById('totalVolume').innerText = stats.total.toLocaleString();
             document.getElementById('totalApproved').innerText = stats.app.toLocaleString();
             document.getElementById('totalRejected').innerText = stats.rej.toLocaleString();
-            document.getElementById('accuracyRate').innerText = stats.total > 0 
-                ? ((stats.app / stats.total) * 100).toFixed(1) + '%' : '0%';
+            document.getElementById('totalTicketsActioned').innerText = stats.uniqueUserIds.size.toLocaleString();
+
+            renderDayWiseTable();
 
             const mBody = document.getElementById('marketBody');
             mBody.innerHTML = Object.entries(stats.markets).sort((a,b) => b[1].total - a[1].total).map(([name, s]) => `
