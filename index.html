@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,46 +8,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
-        }
-
-        .summary-table th {
-            border: 1px solid #f1f5f9;
-            text-align: center;
-            padding: 12px 8px;
-            font-size: 0.7rem;
-            white-space: nowrap;
-        }
-
-        .summary-table td {
-            border: 1px solid #f8fafc;
-            padding: 10px 12px;
-            text-align: right;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
-
-        .summary-table tr:hover td {
-            background-color: #f8fafc;
-        }
-
-        .sub-header th {
-            font-size: 0.6rem;
-            color: #94a3b8;
-            letter-spacing: 0.05em;
-            border-top: none;
-        }
-
-        .total-col {
-            font-weight: 800;
-            background-color: #f8fafc;
-            color: #1e293b;
-        }
-
+        
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        
+        .summary-table th { border: 1px solid #f1f5f9; text-align: center; padding: 12px 8px; font-size: 0.7rem; white-space: nowrap; }
+        .summary-table td { border: 1px solid #f8fafc; padding: 10px 12px; text-align: right; font-size: 0.85rem; transition: all 0.2s; }
+        .summary-table tr:hover td { background-color: #f8fafc; }
+        
+        .sub-header th { font-size: 0.6rem; color: #94a3b8; letter-spacing: 0.05em; border-top: none; }
+        .total-col { font-weight: 800; background-color: #f8fafc; color: #1e293b; }
+        
         .loader {
             border: 3px solid #f3f3f3;
             border-top: 3px solid #3b82f6;
@@ -57,55 +26,16 @@
             height: 24px;
             animation: spin 1s linear infinite;
         }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .drill-down-row { cursor: pointer; transition: background-color 0.2s; }
+        .drill-down-row:hover { background-color: #f1f5f9 !important; }
+        
+        .detail-table th { font-size: 0.6rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; background: #f8fafc; padding: 12px 8px; font-weight: 800; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; z-index: 20; }
+        .detail-table td { font-size: 0.7rem; padding: 10px 8px; border-bottom: 1px solid #f1f5f9; color: #334155; }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .drill-down-row {
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .drill-down-row:hover {
-            background-color: #f1f5f9 !important;
-        }
-
-        .detail-table th {
-            font-size: 0.6rem;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            background: #f8fafc;
-            padding: 12px 8px;
-            font-weight: 800;
-            border-bottom: 2px solid #e2e8f0;
-            position: sticky;
-            top: 0;
-            z-index: 20;
-        }
-
-        .detail-table td {
-            font-size: 0.7rem;
-            padding: 10px 8px;
-            border-bottom: 1px solid #f1f5f9;
-            color: #334155;
-        }
-
-        .zonal-card {
-            border-radius: 2rem;
-            overflow: hidden;
-            background: white;
-            border: 1px solid #f1f5f9;
-            box-shadow: 0 4px 15px -1px rgb(0 0 0 / 0.05);
-        }
-
+        .zonal-card { border-radius: 2rem; overflow: hidden; background: white; border: 1px solid #f1f5f9; box-shadow: 0 4px 15px -1px rgb(0 0 0 / 0.05); }
+        
         .glass-card {
             background: white;
             padding: 1.5rem;
@@ -115,313 +45,37 @@
             transition: all 0.3s ease;
         }
 
-        .highlight-green {
-            color: #10b981 !important;
-            font-weight: 900;
-        }
+        .highlight-green { color: #10b981 !important; font-weight: 900; }
+        
+        .progress-bar { height: 10px; border-radius: 6px; background: #f1f5f9; overflow: hidden; }
+        .progress-fill { height: 100%; transition: width 1s ease-in-out; border-radius: 6px; }
+        
+        .cat-group { display: flex; flex-direction: column; gap: 0.75rem; }
+        .split-box { display: flex; gap: 1rem; align-items: stretch; }
+        .mmu-box { flex: 2.2; }
+        .margin-box { flex: 1; }
 
-        .progress-bar {
-            height: 10px;
-            border-radius: 6px;
-            background: #f1f5f9;
-            overflow: hidden;
-        }
+        .pill-stat { border-radius: 1rem; padding: 0.5rem; text-align: center; }
 
-        .progress-fill {
-            height: 100%;
-            transition: width 1s ease-in-out;
-            border-radius: 6px;
-        }
-
-        .cat-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .split-box {
-            display: flex;
-            gap: 1rem;
-            align-items: stretch;
-        }
-
-        .mmu-box {
-            flex: 2.2;
-        }
-
-        .margin-box {
-            flex: 1;
-        }
-
-        .pill-stat {
-            border-radius: 1rem;
-            padding: 0.5rem;
-            text-align: center;
-        }
-
-        .risk-view-section {
-            border-top: 2px dashed #fee2e2;
-            padding-top: 3rem;
-            margin-top: 4rem;
-        }
-
-        .risk-table th {
-            font-size: 0.65rem;
-            color: #64748b;
-            font-weight: 800;
-            text-transform: uppercase;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 12px;
-        }
-
-        .risk-table td {
-            font-size: 0.75rem;
-            padding: 12px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .aging-badge {
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-weight: 800;
-            font-size: 10px;
-            display: inline-block;
-        }
-
-        /* Password Protection Modal */
-        .password-overlay {
-            position: fixed;
-            inset: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(10px);
-        }
-
-        .password-box {
-            background: white;
-            padding: 3rem 2.5rem;
-            border-radius: 2rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            max-width: 400px;
-            width: 90%;
-            animation: slideUp 0.4s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .password-input {
-            width: 100%;
-            padding: 1rem 1.25rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 1rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            transition: all 0.3s;
-            outline: none;
-        }
-
-        .password-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .password-btn {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 1rem;
-            font-weight: 800;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 1rem;
-        }
-
-        .password-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
-        }
-
-        .password-error {
-            color: #ef4444;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-top: 0.5rem;
-            display: none;
-        }
-
-        /* Refresh Button */
-        .refresh-btn {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 1rem;
-            font-weight: 800;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            box-shadow: 0 4px 15px -3px rgba(16, 185, 129, 0.3);
-        }
-
-        .refresh-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px -5px rgba(16, 185, 129, 0.5);
-        }
-
-        .refresh-btn:active {
-            transform: translateY(0);
-        }
-
-        .refresh-icon {
-            width: 16px;
-            height: 16px;
-            animation: none;
-        }
-
-        .refresh-btn.loading .refresh-icon {
-            animation: spin 1s linear infinite;
-        }
-
-        /* Date Filter */
-        .date-filter-wrap {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            background: white;
-            padding: 0.5rem 1.1rem;
-            border-radius: 1rem;
-            border: 1.5px solid #e2e8f0;
-            box-shadow: 0 2px 10px -3px rgba(0, 0, 0, 0.07);
-            transition: border-color 0.2s;
-        }
-
-        .date-filter-wrap:focus-within {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.10);
-        }
-
-        .date-filter-label {
-            font-size: 0.6rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: #94a3b8;
-            white-space: nowrap;
-        }
-
-        .date-filter-input {
-            border: none;
-            outline: none;
-            font-size: 0.78rem;
-            font-weight: 800;
-            color: #1e293b;
-            background: transparent;
-            cursor: pointer;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        .snapshot-badge {
-            display: none;
-            align-items: center;
-            gap: 0.35rem;
-            background: #fef3c7;
-            color: #b45309;
-            font-size: 0.6rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            padding: 0.3rem 0.7rem;
-            border-radius: 0.6rem;
-            border: 1.5px solid #fde68a;
-        }
-
-        .snapshot-badge.visible {
-            display: flex;
-        }
+        .risk-view-section { border-top: 2px dashed #fee2e2; padding-top: 3rem; margin-top: 4rem; }
+        .risk-table th { font-size: 0.65rem; color: #64748b; font-weight: 800; text-transform: uppercase; background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 12px; }
+        .risk-table td { font-size: 0.75rem; padding: 12px; border-bottom: 1px solid #f1f5f9; }
+        .aging-badge { padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 10px; display: inline-block; }
     </style>
 </head>
-
 <body class="min-h-screen">
-    <!-- Password Protection Modal -->
-    <div id="password-overlay" class="password-overlay">
-        <div class="password-box">
-            <div class="text-center mb-6">
-                <div class="inline-block bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-2xl mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                </div>
-                <h2 class="text-2xl font-black text-slate-900 mb-2">Secured Access</h2>
-                <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Enter Password to Continue</p>
-            </div>
-            <input type="password" id="password-input" class="password-input" placeholder="Enter password"
-                autocomplete="off" />
-            <p id="password-error" class="password-error">Incorrect password. Please try again.</p>
-            <button onclick="checkPassword()" class="password-btn">Unlock Dashboard</button>
-        </div>
-    </div>
-
     <div class="max-w-7xl mx-auto px-4 py-8">
         <!-- Header Controls -->
         <div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
             <div class="space-y-1">
                 <h1 class="text-4xl font-black text-slate-900 tracking-tight">Non-Perishables Commerce</h1>
-                <p id="view-subtitle" class="text-[10px] text-blue-600 font-bold uppercase tracking-[0.3em]">Business
-                    Intelligence Dashboard</p>
+                <p id="view-subtitle" class="text-[10px] text-blue-600 font-bold uppercase tracking-[0.3em]">Business Intelligence Dashboard</p>
             </div>
 
             <div class="flex items-center gap-4">
-                <!-- Date Filter -->
-                <div class="date-filter-wrap">
-                    <span class="date-filter-label">📅 Date</span>
-                    <input type="date" id="date-filter" class="date-filter-input" />
-                </div>
-                <span id="snapshot-badge" class="snapshot-badge">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Snapshot
-                </span>
-                <button onclick="refreshData()" id="refresh-btn" class="refresh-btn">
-                    <svg class="refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    Refresh
-                </button>
                 <div class="bg-white p-2 px-5 rounded-full shadow-sm border border-slate-200 flex items-center gap-4">
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Select Month</span>
-                    <select id="main-month-filter"
-                        class="bg-transparent border-none text-slate-900 font-extrabold text-sm focus:ring-0 cursor-pointer outline-none"></select>
+                    <select id="main-month-filter" class="bg-transparent border-none text-slate-900 font-extrabold text-sm focus:ring-0 cursor-pointer outline-none"></select>
                 </div>
             </div>
         </div>
@@ -429,7 +83,6 @@
         <!-- Metric Grid -->
         <div id="top-metrics-row" class="hidden mb-6">
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-12 gap-4">
-                <!-- Total No. Trades -->
                 <div class="glass-card xl:col-span-2 border-2 border-slate-900 bg-slate-900 text-white">
                     <p class="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-2">Total No. Trades</p>
                     <h3 id="stat-total-trades" class="text-3xl font-black">0</h3>
@@ -439,7 +92,7 @@
                     <p class="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-2">Executed</p>
                     <h3 id="stat-executed" class="text-2xl font-black text-slate-800">0</h3>
                 </div>
-
+                
                 <div class="glass-card">
                     <p class="text-blue-600 text-[10px] uppercase font-black tracking-widest mb-2">Confirmed</p>
                     <h3 id="stat-confirmed" class="text-2xl font-black text-blue-600">0</h3>
@@ -450,12 +103,11 @@
                     <h3 id="stat-closed" class="text-2xl font-black text-emerald-600">0</h3>
                 </div>
 
-                <!-- Open Trades -->
                 <div class="glass-card border-2 border-orange-500 bg-orange-50/20">
                     <p class="text-orange-600 text-[10px] uppercase font-black tracking-widest mb-2">Open Trades</p>
                     <h3 id="stat-open-trades" class="text-2xl font-black text-orange-700">0</h3>
                 </div>
-
+                
                 <div class="glass-card xl:col-span-2">
                     <p class="text-blue-600 text-[10px] uppercase font-black tracking-widest mb-2">Active Buyers</p>
                     <div class="flex items-baseline gap-2 mb-2">
@@ -477,10 +129,13 @@
                     <p class="text-purple-600 text-[10px] uppercase font-black tracking-widest mb-2">Sellers</p>
                     <h3 id="stat-sellers" class="text-2xl font-black text-purple-600">0</h3>
                 </div>
-                <div class="glass-card bg-slate-100 text-slate-900 border-none">
+
+                <!-- HIGHLIGHTED CEMENT COLOR BOX -->
+                <div class="glass-card bg-slate-800 text-white border-none shadow-xl">
                     <p class="text-slate-400 text-[9px] uppercase font-black tracking-widest mb-1">Closed GMV</p>
-                    <h3 id="stat-gmv" class="text-xl font-black">₹0</h3>
+                    <h3 id="stat-gmv" class="text-xl font-black text-white">₹0</h3>
                 </div>
+
                 <div class="glass-card bg-emerald-600 text-white border-none">
                     <p class="text-emerald-100 text-[9px] uppercase font-black tracking-widest mb-1">Margin</p>
                     <h3 id="stat-margin" class="text-xl font-black">₹0</h3>
@@ -497,28 +152,22 @@
             <div class="glass-card bg-white border-2 border-emerald-100 bg-emerald-50/10">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
                     <div class="space-y-1">
-                        <p class="text-[11px] font-black uppercase tracking-widest text-emerald-600">Business Efficiency
-                        </p>
+                        <p class="text-[11px] font-black uppercase tracking-widest text-emerald-600">Business Efficiency</p>
                         <h2 class="text-3xl font-black text-slate-800">Net Margin %</h2>
                     </div>
                     <div class="flex flex-1 max-w-2xl items-center gap-10">
                         <div class="flex-1 space-y-3">
                             <div class="flex justify-between items-baseline">
-                                <span
-                                    class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Profitability
-                                    Ratio</span>
-                                <span id="net-margin-perc-display"
-                                    class="text-4xl font-black text-emerald-600">0%</span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Profitability Ratio</span>
+                                <span id="net-margin-perc-display" class="text-4xl font-black text-emerald-600">0%</span>
                             </div>
                             <div class="progress-bar">
-                                <div id="net-margin-progress" class="progress-fill bg-emerald-600" style="width: 0%">
-                                </div>
+                                <div id="net-margin-progress" class="progress-fill bg-emerald-600" style="width: 0%"></div>
                             </div>
                         </div>
                         <div class="h-16 w-[1px] bg-slate-200 hidden md:block"></div>
                         <div class="text-right">
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Yield per
-                                Trade</p>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Yield per Trade</p>
                             <h4 id="net-avg-margin" class="text-2xl font-black text-slate-800 tracking-tight">₹0</h4>
                         </div>
                     </div>
@@ -528,50 +177,18 @@
 
         <!-- Category MMU -->
         <div id="category-mmu-row" class="hidden mb-12 space-y-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div id="mmu-grid-container" class="contents"></div>
-            </div>
+            <div id="mmu-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
         </div>
 
         <!-- Commodity Matrix -->
-        <div id="matrix-container"
-            class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mb-12 hidden">
+        <div id="matrix-container" class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mb-12 hidden">
             <div class="p-8 pb-4">
                 <h3 class="text-lg font-black text-slate-800 tracking-tight">Commodity Matrix</h3>
             </div>
             <div class="overflow-x-auto px-4 pb-8">
                 <table class="w-full border-separate border-spacing-1 summary-table">
-                    <thead>
-                        <tr>
-                            <th rowspan="2"
-                                class="text-left px-6 py-4 text-slate-400 font-black uppercase tracking-widest border-none">
-                                Metric</th>
-                            <th colspan="2"
-                                class="bg-orange-50 font-black uppercase text-[10px] tracking-widest border-none py-4">
-                                Onion</th>
-                            <th colspan="2"
-                                class="bg-blue-50 font-black uppercase text-[10px] tracking-widest border-none py-4">
-                                Garlic</th>
-                            <th colspan="2"
-                                class="bg-purple-50 font-black uppercase text-[10px] tracking-widest border-none py-4">
-                                Ginger</th>
-                            <th colspan="2"
-                                class="bg-slate-50 font-black uppercase text-[10px] tracking-widest border-none py-4">
-                                Others</th>
-                            <th rowspan="2"
-                                class="bg-slate-800 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest border-none px-6">
-                                Total</th>
-                        </tr>
-                        <tr class="sub-header">
-                            <th>Order</th>
-                            <th>Comm..</th>
-                            <th>Order</th>
-                            <th>Comm..</th>
-                            <th>Order</th>
-                            <th>Comm..</th>
-                            <th>Order</th>
-                            <th>Comm..</th>
-                        </tr>
+                    <thead id="matrix-head">
+                        <!-- Dynamic Head -->
                     </thead>
                     <tbody id="matrix-body"></tbody>
                 </table>
@@ -586,8 +203,7 @@
             <div class="flex items-center justify-between mb-8">
                 <div class="space-y-1">
                     <h2 class="text-2xl font-black text-red-600">Aging Risk Intelligence</h2>
-                    <p class="text-[9px] text-red-400 font-bold uppercase tracking-widest">Open Trades > 7 Days Delay
-                    </p>
+                    <p class="text-[9px] text-red-400 font-bold uppercase tracking-widest">Open Trades > 7 Days Delay</p>
                 </div>
                 <div class="bg-red-50 px-4 py-2 rounded-2xl border border-red-100">
                     <span class="text-[10px] font-black text-red-600 uppercase">Critical Risks: </span>
@@ -598,35 +214,14 @@
         </div>
 
         <!-- Details Drawer -->
-        <div id="trade-detail-container"
-            class="fixed inset-x-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 ease-out bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-t-[3rem] h-[90vh] border-t border-slate-200 overflow-hidden hidden">
+        <div id="trade-detail-container" class="fixed inset-x-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 ease-out bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-t-[3rem] h-[90vh] border-t border-slate-200 overflow-hidden hidden">
             <div class="sticky top-0 bg-white p-8 pb-4 flex justify-between items-center border-b border-slate-50 z-30">
-                <h3 class="text-xl font-black text-slate-800 tracking-tight flex items-center gap-3"><span
-                        id="detail-zone-name" class="text-blue-600">Zone</span><span class="text-slate-300">/</span>
-                    Detailed Ledger</h3>
-                <button onclick="closeDetails()"
-                    class="bg-slate-100 hover:bg-slate-200 p-3 rounded-full transition-colors"><svg
-                        xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-500" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg></button>
+                <h3 class="text-xl font-black text-slate-800 tracking-tight flex items-center gap-3"><span id="detail-zone-name" class="text-blue-600">Zone</span><span class="text-slate-300">/</span> Detailed Ledger</h3>
+                <button onclick="closeDetails()" class="bg-slate-100 hover:bg-slate-200 p-3 rounded-full transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
             <div class="overflow-x-auto overflow-y-auto h-[calc(90vh-100px)] p-6">
                 <table class="w-full detail-table">
-                    <thead>
-                        <tr>
-                            <th class="text-left">Date</th>
-                            <th class="text-left">Buyer Name</th>
-                            <th class="text-left">Seller</th>
-                            <th class="text-right">Purchase Value</th>
-                            <th class="text-right">GMV</th>
-                            <th class="text-right">Seller Payout</th>
-                            <th class="text-right">Margin</th>
-                            <th class="text-right">Margin %</th>
-                            <th class="text-center">Status</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th class="text-left">Date</th><th class="text-left">Buyer Name</th><th class="text-left">Seller</th><th class="text-right">Purchase Value</th><th class="text-right">GMV</th><th class="text-right">Seller Payout</th><th class="text-right">Margin</th><th class="text-right">Margin %</th><th class="text-center">Status</th></tr></thead>
                     <tbody id="trade-detail-body"></tbody>
                 </table>
             </div>
@@ -636,190 +231,15 @@
             <div class="loader mb-6"></div>
             <p class="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">Syncing Intelligence</p>
         </div>
-        <div id="error-box"
-            class="hidden p-6 bg-red-50 text-red-700 rounded-3xl text-center border border-red-100 mb-4 font-bold text-sm">
-        </div>
+        <div id="error-box" class="hidden p-6 bg-red-50 text-red-700 rounded-3xl text-center border border-red-100 mb-4 font-bold text-sm"></div>
     </div>
 
     <script>
-        // ─── Date Snapshot Utilities ───────────────────────────────────────────
-        const SNAPSHOT_KEY_PREFIX = 'np_dashboard_snapshot_';
-
-        function todayStr() {
-            // Returns YYYY-MM-DD in local time
-            const d = new Date();
-            return d.getFullYear() + '-' +
-                String(d.getMonth() + 1).padStart(2, '0') + '-' +
-                String(d.getDate()).padStart(2, '0');
-        }
-
-        // Save a daily snapshot of computed metrics to localStorage
-        function saveDailySnapshot(metrics) {
-            const key = SNAPSHOT_KEY_PREFIX + todayStr();
-            try {
-                localStorage.setItem(key, JSON.stringify({ savedAt: new Date().toISOString(), metrics }));
-            } catch (e) { /* quota exceeded – silently ignore */ }
-        }
-
-        // Load a snapshot for a given date string (YYYY-MM-DD), returns null if none
-        function loadSnapshot(dateStr) {
-            try {
-                const raw = localStorage.getItem(SNAPSHOT_KEY_PREFIX + dateStr);
-                return raw ? JSON.parse(raw) : null;
-            } catch (e) { return null; }
-        }
-
-        // Get all dates that have snapshots stored
-        function getSnapshotDates() {
-            const dates = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const k = localStorage.key(i);
-                if (k && k.startsWith(SNAPSHOT_KEY_PREFIX)) {
-                    dates.push(k.replace(SNAPSHOT_KEY_PREFIX, ''));
-                }
-            }
-            return dates.sort();
-        }
-
-        // Render metrics from a snapshot object
-        function renderSnapshot(snap) {
-            const m = snap.metrics;
-            const snapTotalNoTrades = (m.totalExecuted || 0) + (m.confirmedCount || 0);
-            const snapOpenTrades = snapTotalNoTrades - (m.totalClosed || 0);
-            document.getElementById('stat-total-trades').textContent = snapTotalNoTrades.toLocaleString();
-            document.getElementById('stat-executed').textContent = (m.totalExecuted || 0).toLocaleString();
-            document.getElementById('stat-confirmed').textContent = (m.confirmedCount || 0).toLocaleString();
-            document.getElementById('stat-closed').textContent = (m.totalClosed || 0).toLocaleString();
-            document.getElementById('stat-open-trades').textContent = snapOpenTrades.toLocaleString();
-            document.getElementById('stat-buyers-total').textContent = (m.activeBuyers || 0).toLocaleString();
-            document.getElementById('stat-buyers-fta').textContent = (m.ftaBuyers || 0).toLocaleString();
-            document.getElementById('stat-buyers-ret').textContent = ((m.activeBuyers || 0) - (m.ftaBuyers || 0)).toLocaleString();
-            document.getElementById('stat-sellers').textContent = (m.sellers || 0).toLocaleString();
-            document.getElementById('stat-gmv').textContent = '₹' + Math.round(m.gmv || 0).toLocaleString();
-            document.getElementById('stat-margin').textContent = '₹' + Math.round(m.margin || 0).toLocaleString();
-            document.getElementById('stat-potential').textContent = '₹' + Math.round(m.potentialMargin || 0).toLocaleString();
-            const netP = m.netMarginPerc || 0;
-            document.getElementById('net-margin-perc-display').textContent = (netP * 100).toFixed(2) + '%';
-            document.getElementById('net-avg-margin').textContent = '₹' + Math.round(m.avgMarginPerTrade || 0).toLocaleString();
-            document.getElementById('net-margin-progress').style.width = Math.min(netP * 100 * 10, 100) + '%';
-
-            // Show only top metric cards; hide table-heavy sections
-            document.getElementById('top-metrics-row').classList.remove('hidden');
-            document.getElementById('net-margin-row').classList.remove('hidden');
-            document.getElementById('category-mmu-row').classList.add('hidden');
-            document.getElementById('matrix-container').classList.add('hidden');
-            document.getElementById('regional-views').innerHTML = '';
-            document.getElementById('risk-view-container').classList.add('hidden');
-            document.getElementById('initial-loader').classList.add('hidden');
-        }
-
-        // ─── Date Filter Setup ─────────────────────────────────────────────────
-        function setupDateFilter() {
-            const dateInput = document.getElementById('date-filter');
-            const badge = document.getElementById('snapshot-badge');
-            const today = todayStr();
-            dateInput.value = today;
-            dateInput.max = today; // Cannot pick future dates
-
-            dateInput.addEventListener('change', () => {
-                const selected = dateInput.value;
-                if (selected === today) {
-                    // Show live data
-                    badge.classList.remove('visible');
-                    updateView();
-                } else {
-                    const snap = loadSnapshot(selected);
-                    if (snap) {
-                        badge.classList.add('visible');
-                        renderSnapshot(snap);
-                    } else {
-                        badge.classList.remove('visible');
-                        // No snapshot available – show message
-                        document.getElementById('top-metrics-row').classList.add('hidden');
-                        document.getElementById('net-margin-row').classList.add('hidden');
-                        document.getElementById('category-mmu-row').classList.add('hidden');
-                        document.getElementById('matrix-container').classList.add('hidden');
-                        document.getElementById('regional-views').innerHTML = '';
-                        document.getElementById('risk-view-container').classList.add('hidden');
-                        document.getElementById('initial-loader').classList.add('hidden');
-                        showError('No snapshot saved for ' + selected + '. Only dates where the dashboard was loaded will have data.');
-                    }
-                }
-            });
-        }
-
-        // ─── Password Protection ───────────────────────────────────────────────
-        const DASHBOARD_PASSWORD = 'ninjacart2026'; // Change this to your desired password
-
-        function checkPassword() {
-            const input = document.getElementById('password-input');
-            const error = document.getElementById('password-error');
-            const overlay = document.getElementById('password-overlay');
-
-            if (input.value === DASHBOARD_PASSWORD) {
-                overlay.style.opacity = '0';
-                overlay.style.transition = 'opacity 0.3s ease-out';
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    setupDateFilter();
-                    init(); // Initialize dashboard after successful login
-                }, 300);
-                error.style.display = 'none';
-            } else {
-                error.style.display = 'block';
-                input.value = '';
-                input.focus();
-            }
-        }
-
-        // Allow Enter key to submit password
-        document.addEventListener('DOMContentLoaded', () => {
-            const passwordInput = document.getElementById('password-input');
-            if (passwordInput) {
-                passwordInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        checkPassword();
-                    }
-                });
-                passwordInput.focus();
-            }
-        });
-
-        // Refresh Data Function
-        function refreshData() {
-            const btn = document.getElementById('refresh-btn');
-            btn.classList.add('loading');
-            btn.disabled = true;
-
-            // Clear existing data
-            rawData = [];
-
-            // Hide all sections
-            document.getElementById('top-metrics-row').classList.add('hidden');
-            document.getElementById('net-margin-row').classList.add('hidden');
-            document.getElementById('category-mmu-row').classList.add('hidden');
-            document.getElementById('matrix-container').classList.add('hidden');
-            document.getElementById('regional-views').innerHTML = '';
-            document.getElementById('risk-view-container').classList.add('hidden');
-
-            // Show loader
-            document.getElementById('initial-loader').classList.remove('hidden');
-
-            // Reload data
-            init().then(() => {
-                btn.classList.remove('loading');
-                btn.disabled = false;
-            }).catch(() => {
-                btn.classList.remove('loading');
-                btn.disabled = false;
-            });
-        }
-
         const CSV_URL_SHEET1 = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRyVz_AMFqUPAk7w8-jSo1c0u1E8J-NGAecbFB17ZwZtnXbc2MC4QUqVehkOQBVSwKSRnShOsIna5rl/pub?output=csv';
 
-        let rawData = [];
-        const CATEGORIES = ['Onion', 'Garlic', 'Ginger', 'Others'];
-        const TYPES = ['Order', 'Comm..'];
+        let rawData = []; 
+        const CATEGORIES = ['Onion', 'Garlic', 'Ginger', 'Potato', 'Coconut'];
+        const TYPES = ['Order', 'Comm..']; 
         const REGION_MAP = { "Nagendra": "Nashik Zone", "Sachin": "Nagar Zone", "Nanda Kishore": "Southern Region", "Manpreet": "MP Cluster", "Central": "Central Hub" };
 
         function findColumn(row, targetName) {
@@ -829,6 +249,16 @@
             if (!key) key = keys.find(k => k.trim().toLowerCase() === targetName.toLowerCase());
             if (!key) key = keys.find(k => k.toLowerCase().includes(targetName.toLowerCase()));
             return key ? row[key] : null;
+        }
+
+        function getRowCategory(row) {
+            const sku = String(findColumn(row, 'Sku Category') || '').toLowerCase();
+            if (sku.includes('onion')) return 'Onion';
+            if (sku.includes('garlic')) return 'Garlic';
+            if (sku.includes('ginger')) return 'Ginger';
+            if (sku.includes('potato')) return 'Potato';
+            if (sku.includes('coconut')) return 'Coconut';
+            return 'Other';
         }
 
         function cleanNumber(val) {
@@ -844,7 +274,7 @@
 
                 if (rawData.length > 0) {
                     const months = [...new Set(rawData.map(row => findColumn(row, 'GMV Month')))].filter(Boolean);
-                    months.sort((a, b) => new Date('01-' + a) - new Date('01-' + b));
+                    months.sort((a,b) => new Date('01-' + a) - new Date('01-' + b));
                     const mainSelect = document.getElementById('main-month-filter');
                     mainSelect.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
                     mainSelect.value = months[months.length - 1];
@@ -870,75 +300,52 @@
 
         function updateView() {
             const selectedMonth = document.getElementById('main-month-filter').value;
-
+            
             const monthData = rawData.filter(row => String(findColumn(row, 'GMV Month')) === selectedMonth);
             const closedData = monthData.filter(row => String(findColumn(row, 'Trade Status') || '').toLowerCase().trim() === 'closed');
-
-            // Logic for Confirmed Orders from formula criteria
+            
             const confirmedGridData = rawData.filter(row => {
                 const bjMonth = String(findColumn(row, 'Formula2') || '');
                 const blStatus = String(findColumn(row, 'Status 2') || '').toLowerCase().trim();
                 return bjMonth === selectedMonth && blStatus === 'confirmed';
             });
 
-            // Standard Metrics
             const totalExecuted = monthData.length;
             const totalConfirmed = confirmedGridData.length;
             const totalClosed = closedData.length;
-
-            // New Metrics
             const totalNoTrades = totalExecuted + totalConfirmed;
             const openTrades = totalNoTrades - totalClosed;
 
             const gmv = closedData.reduce((sum, row) => sum + cleanNumber(findColumn(row, 'Sale value( Contract/GMV)')), 0);
             const margin = closedData.reduce((sum, row) => sum + cleanNumber(findColumn(row, 'Trade Margin')), 0);
-
+            
             const getBuyerId = (row) => findColumn(row, 'buyer_id') || findColumn(row, 'Buyer Name');
-
+            
             const activeBuyersUnique = [...new Set(closedData.map(getBuyerId))].filter(Boolean);
             const ftaBuyersUnique = [...new Set(closedData.filter(row => String(findColumn(row, 'FTA Check') || '').toLowerCase().trim() === 'yes').map(getBuyerId))].filter(Boolean);
 
-            const sellersUnique = [...new Set(closedData.map(row => findColumn(row, 'sellerName')))].filter(Boolean);
             const avgGmvPerTrade = totalClosed > 0 ? (gmv / totalClosed) : 0;
             const netMarginPerc = gmv > 0 ? (margin / gmv) : 0;
             const potentialMargin = (totalExecuted - totalClosed) * avgGmvPerTrade * netMarginPerc;
-            const avgMarginPerTrade = totalClosed > 0 ? margin / totalClosed : 0;
 
-            // UI Updates
             document.getElementById('stat-total-trades').textContent = totalNoTrades.toLocaleString();
             document.getElementById('stat-executed').textContent = totalExecuted.toLocaleString();
             document.getElementById('stat-confirmed').textContent = totalConfirmed.toLocaleString();
             document.getElementById('stat-closed').textContent = totalClosed.toLocaleString();
             document.getElementById('stat-open-trades').textContent = openTrades.toLocaleString();
+
             document.getElementById('stat-buyers-total').textContent = activeBuyersUnique.length.toLocaleString();
             document.getElementById('stat-buyers-fta').textContent = ftaBuyersUnique.length.toLocaleString();
             document.getElementById('stat-buyers-ret').textContent = (activeBuyersUnique.length - ftaBuyersUnique.length).toLocaleString();
-
-            document.getElementById('stat-sellers').textContent = sellersUnique.length;
+            
+            document.getElementById('stat-sellers').textContent = [...new Set(closedData.map(row => findColumn(row, 'sellerName')))].filter(Boolean).length;
             document.getElementById('stat-gmv').textContent = '₹' + Math.round(gmv).toLocaleString();
             document.getElementById('stat-margin').textContent = '₹' + Math.round(margin).toLocaleString();
             document.getElementById('stat-potential').textContent = '₹' + Math.round(potentialMargin).toLocaleString();
 
             document.getElementById('net-margin-perc-display').textContent = (netMarginPerc * 100).toFixed(2) + '%';
-            document.getElementById('net-avg-margin').textContent = '₹' + Math.round(avgMarginPerTrade).toLocaleString();
+            document.getElementById('net-avg-margin').textContent = '₹' + Math.round(totalClosed > 0 ? margin/totalClosed : 0).toLocaleString();
             document.getElementById('net-margin-progress').style.width = Math.min(netMarginPerc * 100 * 10, 100) + '%';
-
-            // ── Save today's snapshot to localStorage ──────────────────────────
-            saveDailySnapshot({
-                totalExecuted,
-                totalClosed,
-                confirmedCount: totalConfirmed,
-                activeBuyers: activeBuyersUnique.length,
-                ftaBuyers: ftaBuyersUnique.length,
-                sellers: sellersUnique.length,
-                gmv,
-                margin,
-                potentialMargin,
-                avgGmvPerTrade,
-                netMarginPerc,
-                avgMarginPerTrade,
-                selectedMonth
-            });
 
             renderCategoryMMU(monthData);
             renderNPMatrix(monthData);
@@ -954,22 +361,24 @@
         function renderCategoryMMU(monthData) {
             const container = document.getElementById('mmu-grid-container');
             container.innerHTML = '';
+            
             CATEGORIES.forEach(cat => {
-                const catClosed = monthData.filter(row => {
-                    const sku = String(findColumn(row, 'Sku Category') || '').toLowerCase();
-                    const matches = cat === 'Others' ? (!sku.includes('onion') && !sku.includes('garlic') && !sku.includes('ginger')) : sku.includes(cat.toLowerCase());
-                    return matches && String(findColumn(row, 'Trade Status') || '').toLowerCase().trim() === 'closed';
-                });
+                const catClosed = monthData.filter(row => getRowCategory(row) === cat && String(findColumn(row, 'Trade Status') || '').toLowerCase().trim() === 'closed');
                 const cGmv = catClosed.reduce((sum, r) => sum + cleanNumber(findColumn(r, 'Sale value( Contract/GMV)')), 0);
                 const cMargin = catClosed.reduce((sum, r) => sum + cleanNumber(findColumn(r, 'Trade Margin')), 0);
                 const getBuyerId = (row) => findColumn(row, 'buyer_id') || findColumn(row, 'Buyer Name');
                 const cBuyers = [...new Set(catClosed.map(getBuyerId))].filter(Boolean);
                 const cFta = [...new Set(catClosed.filter(r => String(findColumn(r, 'FTA Check') || '').toLowerCase().trim() === 'yes').map(getBuyerId))].length;
-                const perc = cGmv > 0 ? (cMargin / cGmv * 100).toFixed(2) : '0.00';
-                const color = cat === 'Onion' ? 'orange' : cat === 'Garlic' ? 'blue' : cat === 'Ginger' ? 'purple' : 'slate';
+                const perc = cGmv > 0 ? (cMargin/cGmv*100).toFixed(2) : '0.00';
+                
+                const colors = {
+                    'Onion': 'orange', 'Garlic': 'blue', 'Ginger': 'purple', 'Potato': 'amber', 'Coconut': 'emerald'
+                };
+                const color = colors[cat] || 'slate';
+
                 container.insertAdjacentHTML('beforeend', `
                     <div class="cat-group">
-                        <h3 class="px-2 text-[11px] font-black text-${color}-600 uppercase tracking-[0.2em]">${cat} Category</h3>
+                        <h3 class="px-2 text-[11px] font-black text-${color}-600 uppercase tracking-[0.2em]">${cat}</h3>
                         <div class="split-box">
                             <div class="mmu-box glass-card border-l-4 border-l-${color}-400 !p-5">
                                 <div class="grid grid-cols-3 gap-3">
@@ -980,7 +389,7 @@
                             </div>
                             <div class="margin-box glass-card border-l-4 border-l-emerald-400 !p-5 text-center flex flex-col justify-center">
                                 <p class="text-xl font-black text-emerald-600">${perc}%</p>
-                                <div class="mt-2 progress-bar h-1.5"><div class="progress-fill bg-emerald-500" style="width:${Math.min(parseFloat(perc) * 10, 100)}%"></div></div>
+                                <div class="mt-2 progress-bar h-1.5"><div class="progress-fill bg-emerald-500" style="width:${Math.min(parseFloat(perc)*10, 100)}%"></div></div>
                             </div>
                         </div>
                     </div>`);
@@ -993,16 +402,15 @@
                 const key = `${cat}_${type}`;
                 matrix.executed[key] = 0; matrix.closed[key] = 0; matrix.gmv[key] = 0; matrix.margin[key] = 0;
             }));
+
             data.forEach(row => {
-                const rawCat = String(findColumn(row, 'Sku Category') || '').toLowerCase();
+                const catKey = getRowCategory(row);
+                if (catKey === 'Other') return;
                 const rawMode = String(findColumn(row, 'Order Mode') || '').toLowerCase();
                 const status = String(findColumn(row, 'Trade Status') || '').toLowerCase().trim();
-                let catKey = 'Others';
-                if (rawCat.includes('onion')) catKey = 'Onion';
-                else if (rawCat.includes('garlic')) catKey = 'Garlic';
-                else if (rawCat.includes('ginger')) catKey = 'Ginger';
                 let typeKey = rawMode.includes('commission') ? 'Comm..' : 'Order';
                 const key = `${catKey}_${typeKey}`;
+                
                 if (matrix.executed.hasOwnProperty(key)) {
                     matrix.executed[key]++;
                     if (status === 'closed') {
@@ -1012,17 +420,29 @@
                     }
                 }
             });
+
+            // Update Header
+            const colors = ['bg-orange-50', 'bg-blue-50', 'bg-purple-50', 'bg-amber-50', 'bg-emerald-50'];
+            let headHtml = `<tr><th rowspan="2" class="text-left px-6 py-4 text-slate-400 font-black uppercase tracking-widest border-none">Metric</th>`;
+            CATEGORIES.forEach((cat, idx) => {
+                headHtml += `<th colspan="2" class="${colors[idx] || 'bg-slate-50'} font-black uppercase text-[10px] tracking-widest border-none py-4">${cat}</th>`;
+            });
+            headHtml += `<th rowspan="2" class="bg-slate-800 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest border-none px-6">Total</th></tr><tr class="sub-header">`;
+            CATEGORIES.forEach(() => headHtml += `<th>Order</th><th>Comm..</th>`);
+            headHtml += `</tr>`;
+            document.getElementById('matrix-head').innerHTML = headHtml;
+
             const rows = [{ label: 'Executed Trades', d: matrix.executed, f: 'int' }, { label: 'Closed Trades', d: matrix.closed, f: 'int' }, { label: 'GMV', d: matrix.gmv, f: 'curr' }, { label: 'Margin', d: matrix.margin, f: 'curr', hl: true }, { label: 'Margin %', isP: true, hl: true }];
             document.getElementById('matrix-body').innerHTML = rows.map(r => {
                 let html = `<tr><td class="text-left font-black text-[10px] text-slate-400 uppercase tracking-widest px-6 py-5 border-none">${r.label}</td>`;
                 let rowTotal = 0;
                 CATEGORIES.forEach(c => TYPES.forEach(t => {
                     const k = `${c}_${t}`;
-                    let val = r.isP ? (matrix.gmv[k] > 0 ? (matrix.margin[k] / matrix.gmv[k] * 100).toFixed(2) + '%' : '0.00%') : (r.f === 'curr' ? '₹' + Math.round(r.d[k]).toLocaleString() : r.d[k].toLocaleString());
-                    if (!r.isP) rowTotal += r.d[k];
+                    let val = r.isP ? (matrix.gmv[k] > 0 ? (matrix.margin[k]/matrix.gmv[k]*100).toFixed(2)+'%' : '0.00%') : (r.f === 'curr' ? '₹'+Math.round(r.d[k]).toLocaleString() : r.d[k].toLocaleString());
+                    if(!r.isP) rowTotal += r.d[k];
                     html += `<td class="border-none font-bold ${r.hl ? 'highlight-green' : (t === 'Order' ? 'text-slate-800' : 'text-slate-400')}">${val}</td>`;
                 }));
-                return html + `<td class="total-col border-none text-center font-black">${r.isP ? '' : (r.f === 'curr' ? '₹' + Math.round(rowTotal).toLocaleString() : rowTotal.toLocaleString())}</td></tr>`;
+                return html + `<td class="total-col border-none text-center font-black">${r.isP ? '' : (r.f==='curr' ? '₹'+Math.round(rowTotal).toLocaleString() : rowTotal.toLocaleString())}</td></tr>`;
             }).join('');
             document.getElementById('matrix-container').classList.remove('hidden');
         }
@@ -1031,10 +451,7 @@
             const container = document.getElementById('regional-views');
             container.innerHTML = '';
             CATEGORIES.forEach(cat => {
-                const catData = data.filter(row => {
-                    const sku = String(findColumn(row, 'Sku Category') || '').toLowerCase();
-                    return cat === 'Others' ? (!sku.includes('onion') && !sku.includes('garlic') && !sku.includes('ginger')) : sku.includes(cat.toLowerCase());
-                });
+                const catData = data.filter(row => getRowCategory(row) === cat);
                 if (catData.length === 0) return;
                 const owners = [...new Set(catData.map(row => String(findColumn(row, 'Supply Owner')).trim()))].filter(Boolean);
                 const grandTotal = { executed: 0, closed: 0, gmv: 0, margin: 0 };
@@ -1049,9 +466,9 @@
                     });
                     grandTotal.executed += stats.executed; grandTotal.closed += stats.closed; grandTotal.gmv += stats.gmv; grandTotal.margin += stats.margin;
                     const displayName = REGION_MAP[owner] || owner;
-                    rowsHtml += `<tr class="drill-down-row" onclick="showCategoryZoneDetails('${owner}', '${displayName}', '${cat}')"><td class="text-left px-8 py-4 font-bold text-slate-700 border-none flex items-center gap-3"><div class="w-1 h-1 rounded-full bg-blue-500"></div>${displayName}</td><td class="border-none font-medium">${stats.executed.toLocaleString()}</td><td class="border-none font-medium">${stats.closed.toLocaleString()}</td><td class="border-none font-medium">₹${Math.round(stats.gmv).toLocaleString()}</td><td class="border-none font-medium text-emerald-600">₹${Math.round(stats.margin).toLocaleString()}</td><td class="border-none font-black text-slate-800">${(stats.gmv > 0 ? (stats.margin / stats.gmv * 100).toFixed(2) : '0.00')}%</td></tr>`;
+                    rowsHtml += `<tr class="drill-down-row" onclick="showCategoryZoneDetails('${owner}', '${displayName}', '${cat}')"><td class="text-left px-8 py-4 font-bold text-slate-700 border-none flex items-center gap-3"><div class="w-1 h-1 rounded-full bg-blue-500"></div>${displayName}</td><td class="border-none font-medium">${stats.executed.toLocaleString()}</td><td class="border-none font-medium">${stats.closed.toLocaleString()}</td><td class="border-none font-medium">₹${Math.round(stats.gmv).toLocaleString()}</td><td class="border-none font-medium text-emerald-600">₹${Math.round(stats.margin).toLocaleString()}</td><td class="border-none font-black text-slate-800">${(stats.gmv > 0 ? (stats.margin/stats.gmv*100).toFixed(2) : '0.00')}%</td></tr>`;
                 });
-                container.insertAdjacentHTML('beforeend', `<div class="zonal-card"><div class="bg-slate-900 text-white py-5 px-8 flex justify-between items-center"><h3 class="font-black text-xs uppercase tracking-[0.2em]">${cat} Territory Breakdown</h3></div><div class="overflow-x-auto p-4"><table class="w-full summary-table"><thead><tr class="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-400"><th class="text-left px-8 py-4 border-none">Zone / Owner</th><th class="border-none">Executed</th><th class="border-none">Closed</th><th class="border-none">GMV</th><th class="border-none">Margin</th><th class="border-none">MMU</th></tr></thead><tbody>${rowsHtml}<tr class="bg-slate-50/50 border-t-2 border-slate-100"><td class="text-left px-8 py-5 font-black text-slate-900 text-xs border-none">GRAND TOTAL</td><td class="border-none font-black">${grandTotal.executed.toLocaleString()}</td><td class="border-none font-black">${grandTotal.closed.toLocaleString()}</td><td class="border-none font-black">₹${Math.round(grandTotal.gmv).toLocaleString()}</td><td class="border-none font-black highlight-green">₹${Math.round(grandTotal.margin).toLocaleString()}</td><td class="border-none font-black text-emerald-600">${(grandTotal.gmv > 0 ? (grandTotal.margin / grandTotal.gmv * 100).toFixed(2) : '0.00')}%</td></tr></tbody></table></div></div>`);
+                container.insertAdjacentHTML('beforeend', `<div class="zonal-card"><div class="bg-slate-900 text-white py-5 px-8 flex justify-between items-center"><h3 class="font-black text-xs uppercase tracking-[0.2em]">${cat} Territory Breakdown</h3></div><div class="overflow-x-auto p-4"><table class="w-full summary-table"><thead><tr class="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-400"><th class="text-left px-8 py-4 border-none">Zone / Owner</th><th class="border-none">Executed</th><th class="border-none">Closed</th><th class="border-none">GMV</th><th class="border-none">Margin</th><th class="border-none">MMU</th></tr></thead><tbody>${rowsHtml}<tr class="bg-slate-50/50 border-t-2 border-slate-100"><td class="text-left px-8 py-5 font-black text-slate-900 text-xs border-none">GRAND TOTAL</td><td class="border-none font-black">${grandTotal.executed.toLocaleString()}</td><td class="border-none font-black">${grandTotal.closed.toLocaleString()}</td><td class="border-none font-black">₹${Math.round(grandTotal.gmv).toLocaleString()}</td><td class="border-none font-black highlight-green">₹${Math.round(grandTotal.margin).toLocaleString()}</td><td class="border-none font-black text-emerald-600">${(grandTotal.gmv > 0 ? (grandTotal.margin/grandTotal.gmv*100).toFixed(2) : '0.00')}%</td></tr></tbody></table></div></div>`);
             });
         }
 
@@ -1074,12 +491,14 @@
             document.getElementById('risk-trade-count').textContent = riskTrades.length;
             if (riskTrades.length === 0) { mainContainer.classList.add('hidden'); return; }
             mainContainer.classList.remove('hidden'); container.innerHTML = '';
+            
             const grouped = {};
             riskTrades.forEach(row => {
-                const skuCat = String(findColumn(row, 'Sku Category') || 'Others').trim();
+                const skuCat = getRowCategory(row);
                 if (!grouped[skuCat]) grouped[skuCat] = [];
                 grouped[skuCat].push(row);
             });
+            
             Object.entries(grouped).forEach(([catName, trades]) => {
                 container.insertAdjacentHTML('beforeend', `<div class="glass-card !p-0 overflow-hidden border-2 border-red-50"><div class="bg-red-50/50 px-6 py-4 border-b border-red-100 flex justify-between items-center"><h4 class="font-black uppercase tracking-widest text-[11px] text-red-700">${catName} Aging Risks</h4><span class="text-[10px] font-bold text-red-500">${trades.length} Impacted Trades</span></div><div class="overflow-x-auto"><table class="w-full risk-table"><thead><tr><th class="text-left">Supply Owner</th><th class="text-left">Contract Date</th><th class="text-left">Buyer</th><th class="text-left">Supplier</th><th class="text-right">GMV Potential</th><th class="text-center">Aging</th></tr></thead><tbody>${trades.map(t => `<tr><td class="font-bold text-slate-900">${findColumn(t, 'Supply Owner') || '-'}</td><td class="text-slate-500 font-medium">${findColumn(t, 'contractDate') || '-'}</td><td class="font-black text-slate-800">${findColumn(t, 'Buyer Name') || '-'}</td><td class="text-slate-600 font-medium">${findColumn(t, 'sellerName') || '-'}</td><td class="text-right font-black text-slate-600">₹${Math.round(cleanNumber(findColumn(t, 'Sale value( Contract/GMV)'))).toLocaleString()}</td><td class="text-center"><span class="aging-badge bg-red-100 text-red-700">${t.__agingDays}d Delay</span></td></tr>`).join('')}</tbody></table></div></div>`);
             });
@@ -1088,16 +507,14 @@
         function showCategoryZoneDetails(ownerId, displayName, cat) {
             const month = document.getElementById('main-month-filter').value;
             const zoneData = rawData.filter(r => {
-                const sku = String(findColumn(r, 'Sku Category') || '').toLowerCase();
-                const matchesCat = cat === 'Others' ? (!sku.includes('onion') && !sku.includes('garlic') && !sku.includes('ginger')) : sku.includes(cat.toLowerCase());
-                return String(findColumn(r, 'GMV Month')) === month && String(findColumn(r, 'Supply Owner')).trim() === ownerId && matchesCat;
+                return String(findColumn(r, 'GMV Month')) === month && String(findColumn(r, 'Supply Owner')).trim() === ownerId && getRowCategory(r) === cat;
             });
             document.getElementById('detail-zone-name').textContent = displayName;
             document.getElementById('trade-detail-body').innerHTML = zoneData.map(row => {
                 const gmv = cleanNumber(findColumn(row, 'Sale value( Contract/GMV)'));
                 const margin = cleanNumber(findColumn(row, 'Trade Margin'));
                 const status = String(findColumn(row, 'Trade Status') || '-').toUpperCase();
-                return `<tr><td class="text-left text-[10px]">${findColumn(row, 'contractDate') || '-'}</td><td class="text-left font-bold text-slate-900">${findColumn(row, 'Buyer Name') || '-'}</td><td class="text-left truncate max-w-[120px]">${findColumn(row, 'sellerName') || '-'}</td><td class="text-right">₹${Math.round(cleanNumber(findColumn(row, 'Purchase value'))).toLocaleString()}</td><td class="text-right font-black">₹${Math.round(gmv).toLocaleString()}</td><td class="text-right font-medium text-orange-600">₹${Math.round(cleanNumber(findColumn(row, 'Seller Payable(1% - not for all cases)'))).toLocaleString()}</td><td class="text-right font-black highlight-green">₹${Math.round(margin).toLocaleString()}</td><td class="text-right font-black text-emerald-600">${(gmv > 0 ? (margin / gmv * 100).toFixed(2) : '0.00')}%</td><td class="text-center"><span class="px-2 py-0.5 rounded text-[8px] font-black ${status === 'CLOSED' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}">${status}</span></td></tr>`;
+                return `<tr><td class="text-left text-[10px]">${findColumn(row, 'contractDate') || '-'}</td><td class="text-left font-bold text-slate-900">${findColumn(row, 'Buyer Name') || '-'}</td><td class="text-left truncate max-w-[120px]">${findColumn(row, 'sellerName') || '-'}</td><td class="text-right">₹${Math.round(cleanNumber(findColumn(row, 'Purchase value'))).toLocaleString()}</td><td class="text-right font-black">₹${Math.round(gmv).toLocaleString()}</td><td class="text-right font-medium text-orange-600">₹${Math.round(cleanNumber(findColumn(row, 'Seller Payable(1% - not for all cases)'))).toLocaleString()}</td><td class="text-right font-black highlight-green">₹${Math.round(margin).toLocaleString()}</td><td class="text-right font-black text-emerald-600">${(gmv > 0 ? (margin/gmv*100).toFixed(2) : '0.00')}%</td><td class="text-center"><span class="px-2 py-0.5 rounded text-[8px] font-black ${status==='CLOSED'?'bg-emerald-50 text-emerald-600':'bg-blue-50 text-blue-600'}">${status}</span></td></tr>`;
             }).join('');
             const container = document.getElementById('trade-detail-container');
             container.classList.remove('hidden');
@@ -1110,12 +527,12 @@
             setTimeout(() => { container.classList.add('hidden'); }, 300);
         }
 
-        function showError(msg) {
-            const b = document.getElementById('error-box');
-            b.textContent = msg; b.classList.remove('hidden');
-            document.getElementById('initial-loader').classList.add('hidden');
+        function showError(msg) { 
+            const b = document.getElementById('error-box'); 
+            b.textContent = msg; b.classList.remove('hidden'); 
+            document.getElementById('initial-loader').classList.add('hidden'); 
         }
+        window.onload = init;
     </script>
 </body>
-
 </html>
