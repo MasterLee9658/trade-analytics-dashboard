@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operational Performance Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .stat-card { @apply p-5 rounded-2xl glass-card transition-all duration-300 hover:translate-y-[-2px]; }
+        .table-container { @apply overflow-hidden rounded-2xl glass-card; }
+        
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        #detailOverlay {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(100%);
+        }
+        #detailOverlay.active {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="min-h-screen overflow-x-hidden">
+
+    <!-- Detailed Drill-down Overlay -->
+    <div id="detailOverlay" class="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex justify-end">
+        <div class="w-full max-w-5xl bg-white h-full shadow-2xl flex flex-col">
+            <!-- Header -->
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-indigo-600 text-white">
+                <div>
+                    <h2 id="detailTitle" class="text-2xl font-bold">Facility Details</h2>
+                    <p id="detailSubtitle" class="text-xs text-indigo-100 uppercase tracking-widest mt-1">Comprehensive Case Audit</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div id="overlayStats" class="hidden sm:flex gap-4 mr-6 text-sm">
+                        <span class="bg-indigo-500 px-3 py-1 rounded-full"><b id="mTotal">0</b> Cases</span>
+                        <span class="bg-emerald-500 px-3 py-1 rounded-full"><b id="mApp">0</b> Approved</span>
+                        <span class="bg-rose-500 px-3 py-1 rounded-full"><b id="mRej">0</b> Rejected</span>
+                    </div>
+                    <button onclick="closeDetails()" class="p-2 hover:bg-indigo-500 rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content Area -->
+            <div class="flex-1 overflow-hidden flex flex-col p-6">
+                <div class="mb-4 flex justify-between items-end">
+                    <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Detailed Audit Log
+                    </h4>
+                    <div class="text-[10px] text-slate-400 font-bold uppercase">Scroll horizontally to see all comments</div>
+                </div>
+
+                <div class="flex-1 bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm flex flex-col">
+                    <div class="overflow-auto custom-scroll flex-1">
+                        <table class="w-full text-xs text-left min-w-[1200px]">
+                            <thead class="bg-slate-50 text-slate-500 uppercase font-bold sticky top-0 z-10">
+                                <tr>
+                                    <th class="px-4 py-4 border-b border-slate-200">Program Name</th>
+                                    <th class="px-4 py-4 border-b border-slate-200">Vendor Name</th>
+                                    <th class="px-4 py-4 border-b border-slate-200">Doc Type</th>
+                                    <th class="px-4 py-4 border-b border-slate-200">Brief Comments</th>
+                                    <th class="px-4 py-4 border-b border-slate-200">Detailed Comments</th>
+                                    <th class="px-4 py-4 border-b border-slate-200">Short Comments</th>
+                                    <th class="px-4 py-4 border-b border-slate-200 text-center">Analyst</th>
+                                    <th class="px-4 py-4 border-b border-slate-200 text-right">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailCaseBody" class="divide-y divide-slate-100">
+                                <!-- Data injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-[1400px] mx-auto px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-800 tracking-tight">Performance Matrix</h1>
+                    <p class="text-[10px] font-medium text-slate-400 uppercase tracking-widest" id="syncStatus">Initializing...</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <select id="monthFilter" onchange="applyFilters()" class="bg-transparent text-sm font-semibold text-slate-600 px-3 py-1.5 outline-none cursor-pointer">
+                        <option value="all">Full Year</option>
+                    </select>
+                </div>
+                <button onclick="fetchData()" class="p-2.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition-all shadow-sm group">
+                    <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500 group-hover:text-indigo-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-[1400px] mx-auto px-6 py-8">
+        <div id="errorBanner" class="hidden mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm font-medium flex justify-between items-center">
+            <span id="errorMessage"></span>
+            <button onclick="fetchData()" class="underline font-bold hover:text-rose-900 ml-4">Retry</button>
+        </div>
+
+        <!-- Global Stats Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div class="stat-card">
+                <div class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Total Volume</div>
+                <div id="totalVolume" class="text-3xl font-extrabold text-slate-800">0</div>
+            </div>
+            <div class="stat-card border-b-4 border-emerald-500">
+                <div class="text-emerald-500 text-[10px] font-bold uppercase tracking-widest mb-1">Total Approved</div>
+                <div id="totalApproved" class="text-3xl font-extrabold text-emerald-600">0</div>
+            </div>
+            <div class="stat-card border-b-4 border-rose-500">
+                <div class="text-rose-500 text-[10px] font-bold uppercase tracking-widest mb-1">Total Rejected</div>
+                <div id="totalRejected" class="text-3xl font-extrabold text-rose-600">0</div>
+            </div>
+            <div class="stat-card bg-slate-900 !border-none text-white">
+                <div class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">System Accuracy</div>
+                <div id="accuracyRate" class="text-3xl font-extrabold text-indigo-400">0%</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Tables Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left: Market Table -->
+            <div class="table-container">
+                <div class="p-5 border-b border-slate-100 bg-white/50 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-800">Market Performance</h3>
+                    <span class="text-[10px] text-indigo-500 font-bold uppercase bg-indigo-50 px-2 py-1 rounded">Click for Audit Trail</span>
+                </div>
+                <div class="overflow-x-auto max-h-[600px] custom-scroll">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-[10px] text-slate-400 uppercase tracking-widest bg-slate-50/50 sticky top-0 z-10">
+                            <tr>
+                                <th class="px-6 py-4">Facility</th>
+                                <th class="px-6 py-4 text-center">Total</th>
+                                <th class="px-6 py-4 text-center">Approved</th>
+                                <th class="px-6 py-4 text-center">Rejected</th>
+                                <th class="px-6 py-4 text-right">Success</th>
+                            </tr>
+                        </thead>
+                        <tbody id="marketBody" class="divide-y divide-slate-100 bg-white"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right: Analyst Table -->
+            <div class="table-container">
+                <div class="p-5 border-b border-slate-100 bg-white/50">
+                    <h3 class="font-bold text-slate-800">Analyst Rankings</h3>
+                </div>
+                <div class="overflow-x-auto max-h-[600px] custom-scroll">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-[10px] text-slate-400 uppercase tracking-widest bg-slate-50/50 sticky top-0 z-10">
+                            <tr>
+                                <th class="px-6 py-4">Analyst Name</th>
+                                <th class="px-6 py-4 text-center">Volume</th>
+                                <th class="px-6 py-4 text-center">Approve</th>
+                                <th class="px-6 py-4 text-center">Reject</th>
+                                <th class="px-6 py-4 text-right">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analystBody" class="divide-y divide-slate-100 bg-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS3zBcd8A5wSTFHWvUzbsbsCt4gJMUtrU2or1O_O_mYhgzAYuQEOsFmvynlKiBrmWLOIE0NiKSrXz5N/pub?output=csv";
+        
+        let dataset = [];
+        let filteredDataset = [];
+        
+        const MAPPING = {
+            analyst: ['Analyst Name', 'Action Taken By', 'Analyst', 'Name'],
+            status: ['Final Status', 'Status', 'Final Result', 'Trade Status'],
+            market: ['Facility', 'Market Name', 'Kolkata_Market', 'Market', 'Location'],
+            month: ['Month', 'Period', 'GMV Month'],
+            vendor: ['Vendor Name', 'Vendor', 'Supplier'],
+            program: ['Program Name', 'Program', 'Trade Program'],
+            docType: ['Type of Document', 'Doc Type', 'Document'],
+            briefComment: ['Brief Comments', 'Rejection Comments', 'Brief'],
+            detailedComment: ['Detailed Comments', 'Audit Detail', 'Detailed'],
+            shortComment: ['Short Comments', 'Short', 'Summary']
+        };
+
+        function getCol(row, targets) {
+            const keys = Object.keys(row);
+            const key = keys.find(k => targets.some(t => k.trim().toLowerCase() === t.toLowerCase() || k.trim().toLowerCase().includes(t.toLowerCase())));
+            return key ? row[key] : '-';
+        }
+
+        async function fetchData() {
+            const icon = document.getElementById('refreshIcon');
+            const statusLabel = document.getElementById('syncStatus');
+            const errorBanner = document.getElementById('errorBanner');
+            
+            icon.classList.add('animate-spin');
+            statusLabel.innerText = "Syncing live data...";
+            errorBanner.classList.add('hidden');
+
+            Papa.parse(CSV_URL, {
+                download: true,
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true,
+                complete: (results) => {
+                    if (results.data && results.data.length > 0) {
+                        dataset = results.data.map(row => ({
+                            analyst: getCol(row, MAPPING.analyst),
+                            status: getCol(row, MAPPING.status),
+                            market: getCol(row, MAPPING.market),
+                            month: getCol(row, MAPPING.month),
+                            vendor: getCol(row, MAPPING.vendor),
+                            program: getCol(row, MAPPING.program),
+                            docType: getCol(row, MAPPING.docType),
+                            briefComment: getCol(row, MAPPING.briefComment),
+                            detailedComment: getCol(row, MAPPING.detailedComment),
+                            shortComment: getCol(row, MAPPING.shortComment)
+                        })).filter(item => item.analyst !== '-' || item.market !== '-');
+                        
+                        finalizeData(statusLabel);
+                        icon.classList.remove('animate-spin');
+                    } else {
+                        handleFetchError("Spreadsheet returned no valid rows.");
+                    }
+                },
+                error: (err) => {
+                    handleFetchError("Connectivity error. Check Google Sheet link.");
+                }
+            });
+        }
+
+        function handleFetchError(msg) {
+            const icon = document.getElementById('refreshIcon');
+            const statusLabel = document.getElementById('syncStatus');
+            const errorBanner = document.getElementById('errorBanner');
+            statusLabel.innerText = "Sync Failed";
+            document.getElementById('errorMessage').innerText = msg;
+            errorBanner.classList.remove('hidden');
+            icon.classList.remove('animate-spin');
+        }
+
+        function finalizeData(statusLabel) {
+            populateFilters();
+            applyFilters();
+            statusLabel.innerText = `Last update: ${new Date().toLocaleTimeString()}`;
+        }
+
+        function populateFilters() {
+            const filter = document.getElementById('monthFilter');
+            const months = [...new Set(dataset.map(d => d.month).filter(m => m && m !== '-'))].sort();
+            const current = filter.value;
+            filter.innerHTML = '<option value="all">Full Year</option>';
+            months.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m; opt.innerText = m;
+                filter.appendChild(opt);
+            });
+            filter.value = (current === 'all' || !months.includes(current)) ? 'all' : current;
+        }
+
+        function applyFilters() {
+            const month = document.getElementById('monthFilter').value;
+            filteredDataset = month === 'all' ? dataset : dataset.filter(d => String(d.month) === month);
+            
+            const stats = { total: filteredDataset.length, app: 0, rej: 0, markets: {}, analysts: {} };
+
+            filteredDataset.forEach(d => {
+                const s = String(d.status || '').toLowerCase().trim();
+                const m = d.market || 'Unspecified';
+                const a = d.analyst || 'N/A';
+
+                const isApp = s.includes('approve') || s === 'pass' || s === 'completed' || s === 'closed' || s === 'verified';
+                const isRej = s.includes('reject') || s === 'fail' || s === 'returned' || s === 'open';
+
+                if (isApp) stats.app++; else if (isRej) stats.rej++;
+
+                if (!stats.markets[m]) stats.markets[m] = { total: 0, p: 0, f: 0 };
+                stats.markets[m].total++;
+                if (isApp) stats.markets[m].p++; if (isRej) stats.markets[m].f++;
+
+                if (!stats.analysts[a]) stats.analysts[a] = { total: 0, p: 0, f: 0 };
+                stats.analysts[a].total++;
+                if (isApp) stats.analysts[a].p++; if (isRej) stats.analysts[a].f++;
+            });
+            updateUI(stats);
+        }
+
+        function showMarketDetails(marketName) {
+            const marketData = filteredDataset.filter(d => d.market === marketName);
+            const overlay = document.getElementById('detailOverlay');
+            
+            let app = 0, rej = 0;
+            const records = marketData.map(d => {
+                const s = String(d.status || '').toLowerCase().trim();
+                const isApp = s.includes('approve') || s === 'pass' || s === 'completed' || s === 'closed' || s === 'verified';
+                if (isApp) app++; else rej++;
+                return { ...d, isApp };
+            });
+
+            document.getElementById('detailTitle').innerText = marketName;
+            document.getElementById('mTotal').innerText = marketData.length;
+            document.getElementById('mApp').innerText = app;
+            document.getElementById('mRej').innerText = rej;
+
+            const dCaseBody = document.getElementById('detailCaseBody');
+            dCaseBody.innerHTML = records.map(r => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-4 py-4 font-bold text-slate-700 whitespace-nowrap">${r.program}</td>
+                    <td class="px-4 py-4 text-slate-600 whitespace-nowrap">${r.vendor}</td>
+                    <td class="px-4 py-4"><span class="bg-slate-100 px-2 py-1 rounded text-[10px] text-slate-500 font-medium">${r.docType}</span></td>
+                    <td class="px-4 py-4 text-slate-500 max-w-xs truncate" title="${r.briefComment}">${r.briefComment}</td>
+                    <td class="px-4 py-4 text-slate-500 max-w-sm truncate" title="${r.detailedComment}">${r.detailedComment}</td>
+                    <td class="px-4 py-4 text-slate-500 max-w-xs truncate" title="${r.shortComment}">${r.shortComment}</td>
+                    <td class="px-4 py-4 text-center font-medium text-slate-400">${r.analyst}</td>
+                    <td class="px-4 py-4 text-right">
+                        <span class="font-bold px-2 py-1 rounded text-[10px] uppercase ${r.isApp ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'}">
+                            ${r.isApp ? 'Approved' : 'Rejected'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDetails() {
+            document.getElementById('detailOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function updateUI(stats) {
+            document.getElementById('totalVolume').innerText = stats.total.toLocaleString();
+            document.getElementById('totalApproved').innerText = stats.app.toLocaleString();
+            document.getElementById('totalRejected').innerText = stats.rej.toLocaleString();
+            document.getElementById('accuracyRate').innerText = stats.total > 0 
+                ? ((stats.app / stats.total) * 100).toFixed(1) + '%' : '0%';
+
+            const mBody = document.getElementById('marketBody');
+            mBody.innerHTML = Object.entries(stats.markets).sort((a,b) => b[1].total - a[1].total).map(([name, s]) => `
+                <tr class="hover:bg-slate-50 transition-colors cursor-pointer group" onclick="showMarketDetails('${name.replace(/'/g, "\\'")}')">
+                    <td class="px-6 py-4 font-semibold text-slate-700 group-hover:text-indigo-600 flex items-center gap-2">
+                        ${name}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-0 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                        </svg>
+                    </td>
+                    <td class="px-6 py-4 text-center font-medium">${s.total}</td>
+                    <td class="px-6 py-4 text-center text-emerald-600 font-medium">${s.p}</td>
+                    <td class="px-6 py-4 text-center text-rose-500 font-medium">${s.f}</td>
+                    <td class="px-6 py-4 text-right font-extrabold text-slate-800">${s.total > 0 ? ((s.p/s.total)*100).toFixed(1) : 0}%</td>
+                </tr>
+            `).join('');
+
+            const aBody = document.getElementById('analystBody');
+            aBody.innerHTML = Object.entries(stats.analysts).sort((a,b) => b[1].total - a[1].total).map(([name, s]) => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4 font-medium text-slate-700">${name}</td>
+                    <td class="px-6 py-4 text-center font-bold text-slate-300">${s.total}</td>
+                    <td class="px-6 py-4 text-center text-emerald-600 font-medium">${s.p}</td>
+                    <td class="px-6 py-4 text-center text-rose-400 font-medium">${s.f}</td>
+                    <td class="px-6 py-4 text-right font-extrabold text-indigo-600">${s.total > 0 ? ((s.p/s.total)*100).toFixed(1) : 0}%</td>
+                </tr>
+            `).join('');
+        }
+
+        window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDetails(); });
+        window.onload = fetchData;
+    </script>
+</body>
+</html>
